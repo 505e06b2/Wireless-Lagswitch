@@ -18,7 +18,11 @@ ip_handler = ipinfo.getHandler("c74b5a4469d554") #will only work from my IP
 
 VERBOSITY = 0
 HTTP_ADDRESS = "" # "" for anyone
-HTTP_PORT = 8000
+HTTP_PORT = 8181
+
+#iptables settings
+GAME_PORT = 9306 #GTA port
+GAME_PROTOCOL = "udp" #GTA connection type
 
 ip_catalogue = {}
 kill_all = False
@@ -67,8 +71,9 @@ class NFQueueThread(threading.Thread):
 		self.target = target
 		self.daemon = True #will exit when the program does
 		print("Altering iptables...")
-		subprocess.run(shlex.split("iptables -I FORWARD -d %s -j NFQUEUE --queue-num 1" % (self.target.ip))) #ps4 destination
-		subprocess.run(shlex.split("iptables -I FORWARD -s %s -j NFQUEUE --queue-num 1" % (self.target.ip))) #ps4 source
+		#if these rules are very specific, they should allow for performance gains as the kernel will handle more requests directly
+		subprocess.run(shlex.split(f"iptables -I FORWARD -p {GAME_PROTOCOL} -d {self.target.ip} --dport {GAME_PORT} -j NFQUEUE --queue-num 1")) #ps4 destination
+		subprocess.run(shlex.split(f"iptables -I FORWARD -p {GAME_PROTOCOL} -s {self.target.ip} --dport {GAME_PORT} -j NFQUEUE --queue-num 1")) #ps4 source
 		atexit.register(self.__del__) #force running __del__, even
 
 	def __del__(self):
@@ -97,7 +102,7 @@ class NFQueueThread(threading.Thread):
 				raw.accept()
 				return
 
-			remote_ip = self._checkPort(packet, 9306) #9306 is gta
+			remote_ip = self._checkPort(packet, GAME_PORT)
 
 			if remote_ip and remote_ip.startswith("52.40.62."): #SONY/Amazon
 				raw.accept()
