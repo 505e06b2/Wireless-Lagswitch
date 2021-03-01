@@ -11,10 +11,10 @@ VERBOSITY = 0
 TIME_OFFLINE = 20 #seconds
 BAR_LENGTH = 10
 
-print("Finding network devices", end="")
+print("Finding network devices ", end="")
 machines = get_machines.search(mac_startswith="00:d9:d1")
 
-print("\r                       ", end="\r")
+print("\r                        ", end="\r")
 time_started = time.time()
 try:
 	while True:
