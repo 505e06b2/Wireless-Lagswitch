@@ -2,14 +2,14 @@
 
 import scapy.all as net
 import sys, time, math
-from utils import get_machines
+import get_machines
 
 VERBOSITY = 0
 
 print("Finding network devices...")
-machines = get_machines.default()
+machines = get_machines.search(mac_startswith="00:d9:d1")
 
 print("Restoring ARP...")
-net.send(net.ARP(op="who-has", hwdst="ff:ff:ff:ff:ff:ff", pdst=machines["ps4"].ip, hwsrc=machines["gateway"].mac, psrc=machines["gateway"].ip), verbose=VERBOSITY)
-net.send(net.ARP(op="who-has", hwdst="ff:ff:ff:ff:ff:ff", pdst=machines["gateway"].ip, hwsrc=machines["ps4"].mac, psrc=machines["ps4"].ip), verbose=VERBOSITY)
+net.send(net.ARP(op="who-has", hwdst="ff:ff:ff:ff:ff:ff", pdst=machines["target"].ip, hwsrc=machines["gateway"].mac, psrc=machines["gateway"].ip), verbose=VERBOSITY)
+net.send(net.ARP(op="who-has", hwdst="ff:ff:ff:ff:ff:ff", pdst=machines["gateway"].ip, hwsrc=machines["target"].mac, psrc=machines["target"].ip), verbose=VERBOSITY)
 

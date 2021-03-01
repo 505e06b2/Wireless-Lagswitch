@@ -6,6 +6,7 @@ import time, math
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import get_machines
+import atexit
 
 VERBOSITY = 0
 TIME_OFFLINE = 20 #seconds
@@ -14,8 +15,15 @@ BAR_LENGTH = 10
 print("Finding network devices ", end="")
 machines = get_machines.search(mac_startswith="00:d9:d1")
 
+#ensure that it can be cancelled
+def restoreARP():
+	print("\rRestoring ARP   %s" % (" " * BAR_LENGTH))
+	net.send(net.ARP(op="who-has", hwdst="ff:ff:ff:ff:ff:ff", pdst=machines["target"].ip, hwsrc=machines["gateway"].mac, psrc=machines["gateway"].ip), verbose=VERBOSITY)
+atexit.register(restoreARP)
+
 print("\r                        ", end="\r")
 time_started = time.time()
+
 try:
 	while True:
 		delta = int(time.time() - time_started)
@@ -31,9 +39,5 @@ try:
 		time.sleep(1)
 	print("\rDone            %s" % (" " * BAR_LENGTH), end="") #clear the line
 
-except Exception as e:
-	print(e) #all expections must be caught - restoration must happen
-
-print("\rRestoring ARP   %s" % (" " * BAR_LENGTH))
-net.send(net.ARP(op="who-has", hwdst="ff:ff:ff:ff:ff:ff", pdst=machines["target"].ip, hwsrc=machines["gateway"].mac, psrc=machines["gateway"].ip), verbose=VERBOSITY)
-
+except KeyboardInterrupt:
+	pass

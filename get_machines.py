@@ -1,6 +1,12 @@
 import scapy.all as net
 
-import sys, os
+import sys, os, argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--gateway_ip")
+parser.add_argument("--target_ip")
+
+program_arguments = parser.parse_args()
 
 class Machine:
 	def __init__(self, ip, mac=None):
@@ -17,8 +23,12 @@ class Machine:
 
 def search(ip_range=None, target_ip=None, mac_startswith=None):
 	if not ip_range:
-		gateway = net.conf.route.route("0.0.0.0")[2]
+		gateway = program_arguments.gateway_ip or net.conf.route.route("0.0.0.0")[2]
 		ip_range = gateway + "/24" #mine would be "192.168.0.1/24"
+
+	if not target_ip and program_arguments.target_ip:
+		target_ip = program_arguments.target_ip
+		print("TESTED")
 
 	request = net.Ether(dst="ff:ff:ff:ff:ff:ff") / net.ARP(pdst=ip_range)
 	answered, unanswered = net.srp(request, timeout=1, verbose=0)
@@ -42,8 +52,8 @@ def search(ip_range=None, target_ip=None, mac_startswith=None):
 def default():
 	return {
 		"this": Machine(net.get_if_addr(net.conf.iface), net.get_if_hwaddr(net.conf.iface)),
-		"gateway": Machine(net.conf.route.route("0.0.0.0")[2]) #set manually if needed
+		"gateway": Machine(program_arguments.gateway_ip or net.conf.route.route("0.0.0.0")[2]) #set manually if needed
 	}
 
 if __name__ == "__main__":
-   print(default())
+	print(default())
