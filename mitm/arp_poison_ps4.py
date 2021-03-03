@@ -9,7 +9,7 @@ import get_machines
 VERBOSITY = 0
 
 print("Finding network devices...")
-machines = get_machines.search(mac_startswith="00:d9:d1")
+machines = get_machines.search(ps4=True)
 
 print("Enabling IP Forward...")
 with open("/proc/sys/net/ipv4/ip_forward", "w") as f:

@@ -5,8 +5,12 @@ import sys, os, argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--gateway_ip")
 parser.add_argument("--target_ip")
+parser.add_argument("--target_mac")
 
 program_arguments = parser.parse_args()
+
+SonyInte_macs = ["00:04:1f","00:13:15","00:15:c1","00:19:c5","00:1d:0d","00:1f:a7","00:24:8d","00:d9:d1","00:e4:21","0c:fe:45","28:0d:fc","2c:cc:44","70:9e:29","78:c8:81","a8:e3:ee","bc:60:a7","c8:63:f1","f8:46:1c","f8:d0:ac","fc:0f:e6"]
+HonHaiPr_macs = ["ec:0e:c4"] #my wlan mac starts with this
 
 class Machine:
 	def __init__(self, ip, mac=None):
@@ -21,28 +25,37 @@ class Machine:
 	def __repr__(self):
 		return "ip: %s | mac: %s" % (self.ip, self.mac)
 
-def search(ip_range=None, target_ip=None, mac_startswith=None):
+def search(ip_range="", target_ip="", mac_startswith="", ps4=False):
 	if not ip_range:
 		gateway = program_arguments.gateway_ip or net.conf.route.route("0.0.0.0")[2]
 		ip_range = gateway + "/24" #mine would be "192.168.0.1/24"
 
 	if not target_ip and program_arguments.target_ip:
 		target_ip = program_arguments.target_ip
-		print("TESTED")
+
+	if not mac_startswith and program_arguments.target_mac:
+		mac_startswith = program_arguments.target_mac
+
+	if not (ps4 or target_ip or mac_startswith):
+		print("ERROR: No search parameters given")
+		sys.exit(1)
 
 	request = net.Ether(dst="ff:ff:ff:ff:ff:ff") / net.ARP(pdst=ip_range)
 	answered, unanswered = net.srp(request, timeout=1, verbose=0)
 
 	found = []
 	for i in answered:
-		if (not target_ip or target_ip == i[1].psrc) and (not mac_startswith or i[1].hwsrc.startswith(mac_startswith)):
+		if ps4:
+			if i[1].hwsrc[:8] in SonyInte_macs or i[1].hwsrc[:8] in HonHaiPr_macs:
+				found.append((i[1].psrc, i[1].hwsrc))
+		elif (not target_ip or target_ip == i[1].psrc) and (not mac_startswith or i[1].hwsrc.startswith(mac_startswith)):
 			found.append((i[1].psrc, i[1].hwsrc))
 
 	if len(found) > 1:
 		print("ERROR: More than one device found with ip: %s and mac: %s" % (target_ip, mac_startswith))
 		sys.exit(1)
 	elif len(found) == 0:
-		print("ERROR: No devices found with ip: %s and mac: %s" % (target_ip, mac_startswith))
+		print("ERROR: No devices found with ip: %s, mac: %s, ps4: %s" % (target_ip, mac_startswith, ps4))
 		sys.exit(1)
 
 	ret = default()

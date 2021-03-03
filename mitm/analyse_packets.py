@@ -210,7 +210,7 @@ class CustomHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
 	print("Finding network devices...")
-	machines = get_machines.search(mac_startswith="00:d9:d1")
+	machines = get_machines.search(ps4=True)
 
 	network_thread = NFQueueThread(machines["target"])
 	try:

@@ -13,7 +13,7 @@ TIME_OFFLINE = 20 #seconds
 BAR_LENGTH = 10
 
 print("Finding network devices ", end="")
-machines = get_machines.search(mac_startswith="00:d9:d1")
+machines = get_machines.search(ps4=True)
 
 #ensure that it can be cancelled
 def restoreARP():
