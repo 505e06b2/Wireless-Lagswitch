@@ -38,12 +38,12 @@ class NFQueueThread(threading.Thread):
 		atexit.unregister(self.__del__)
 
 	#returns remote IP address
-	def _checkPort(self, packet, port_number):
+	def _checkPort(self, packet):
 		ip = packet[net.IP]
 		try: #target is the PS4
-			if ip.src == self.target.ip and ip.sport == port_number:
+			if ip.src == self.target.ip:
 				return ip.dst
-			elif ip.dst == self.target.ip and ip.dport == port_number:
+			elif ip.dst == self.target.ip:
 				return ip.src
 		except AttributeError:
 			pass
@@ -58,7 +58,7 @@ class NFQueueThread(threading.Thread):
 				raw.accept()
 				return
 
-			remote_ip = self._checkPort(packet, GAME_PORT)
+			remote_ip = self._checkPort(packet)
 
 			if remote_ip and remote_ip.startswith("52.40.62."): #SONY/Amazon
 				return
