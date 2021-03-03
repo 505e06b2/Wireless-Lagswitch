@@ -7,7 +7,7 @@ import get_machines
 VERBOSITY = 0
 
 print("Finding network devices...")
-machines = get_machines.search(mac_startswith="00:d9:d1")
+machines = get_machines.search(ps4=True)
 
 print("Restoring ARP...")
 net.send(net.ARP(op="who-has", hwdst="ff:ff:ff:ff:ff:ff", pdst=machines["target"].ip, hwsrc=machines["gateway"].mac, psrc=machines["gateway"].ip), verbose=VERBOSITY)
