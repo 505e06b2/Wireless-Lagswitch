@@ -45,11 +45,13 @@ def search(ip_range="", target_ip="", mac_startswith="", ps4=False):
 
 	found = []
 	for i in answered:
-		if ps4:
-			if i[1].hwsrc[:8] in SonyInte_macs or i[1].hwsrc[:8] in HonHaiPr_macs:
+		if (not target_ip or target_ip == i[1].psrc) and (not mac_startswith or i[1].hwsrc.startswith(mac_startswith)):
+			if ps4:
+				if i[1].hwsrc[:8] in SonyInte_macs or i[1].hwsrc[:8] in HonHaiPr_macs:
+					found.append((i[1].psrc, i[1].hwsrc))
+			else:
 				found.append((i[1].psrc, i[1].hwsrc))
-		elif (not target_ip or target_ip == i[1].psrc) and (not mac_startswith or i[1].hwsrc.startswith(mac_startswith)):
-			found.append((i[1].psrc, i[1].hwsrc))
+
 
 	if len(found) > 1:
 		print("ERROR: More than one device found with ip: %s and mac: %s" % (target_ip, mac_startswith))
