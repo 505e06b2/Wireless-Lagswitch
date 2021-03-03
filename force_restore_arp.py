@@ -4,8 +4,6 @@ import scapy.all as net
 import sys, time, math
 import get_machines
 
-VERBOSITY = 0
-
 print("Finding network devices...")
 machines = get_machines.search(ps4=True)
 

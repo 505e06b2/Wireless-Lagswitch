@@ -1,13 +1,6 @@
 import scapy.all as net
 
-import sys, os, argparse
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--gateway_ip")
-parser.add_argument("--target_ip")
-parser.add_argument("--target_mac")
-
-program_arguments = parser.parse_args()
+import sys, os
 
 SonyInte_macs = ["00:04:1f","00:13:15","00:15:c1","00:19:c5","00:1d:0d","00:1f:a7","00:24:8d","00:d9:d1","00:e4:21","0c:fe:45","28:0d:fc","2c:cc:44","70:9e:29","78:c8:81","a8:e3:ee","bc:60:a7","c8:63:f1","f8:46:1c","f8:d0:ac","fc:0f:e6"]
 HonHaiPr_macs = ["ec:0e:c4"] #my wlan mac starts with this
@@ -25,16 +18,12 @@ class Machine:
 	def __repr__(self):
 		return "ip: %s | mac: %s" % (self.ip, self.mac)
 
-def search(ip_range="", target_ip="", mac_startswith="", ps4=False):
+def search(gateway_ip="", ip_range="", target_ip="", mac_startswith="", ps4=False):
+	if not gateway_ip:
+		gateway_ip = net.conf.route.route("0.0.0.0")[2]
+
 	if not ip_range:
-		gateway = program_arguments.gateway_ip or net.conf.route.route("0.0.0.0")[2]
-		ip_range = gateway + "/24" #mine would be "192.168.0.1/24"
-
-	if not target_ip and program_arguments.target_ip:
-		target_ip = program_arguments.target_ip
-
-	if not mac_startswith and program_arguments.target_mac:
-		mac_startswith = program_arguments.target_mac
+		ip_range = gateway_ip + "/24" #mine would be "192.168.0.1/24"
 
 	if not (ps4 or target_ip or mac_startswith):
 		print("ERROR: No search parameters given")
@@ -60,15 +49,24 @@ def search(ip_range="", target_ip="", mac_startswith="", ps4=False):
 		print("ERROR: No devices found with ip: %s, mac: %s, ps4: %s" % (target_ip, mac_startswith, ps4))
 		sys.exit(1)
 
-	ret = default()
+	ret = default(gateway_ip)
 	ret["target"] = Machine(found[0][0], found[0][1])
 	return ret
 
-def default():
+def default(gateway_ip=""):
+	if not gateway_ip:
+		gateway_ip = net.conf.route.route("0.0.0.0")[2]
+
 	return {
 		"this": Machine(net.get_if_addr(net.conf.iface), net.get_if_hwaddr(net.conf.iface)),
-		"gateway": Machine(program_arguments.gateway_ip or net.conf.route.route("0.0.0.0")[2]) #set manually if needed
+		"gateway": Machine(gateway_ip) #set manually if needed
 	}
 
 if __name__ == "__main__":
-	print(default())
+	import argparse
+
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--gateway_ip")
+
+	program_arguments = parser.parse_args()
+	print(default(program_arguments.gateway_ip))
