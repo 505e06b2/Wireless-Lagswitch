@@ -17,7 +17,7 @@ import ipinfo #python3 -m pip install ipinfo
 ip_handler = ipinfo.getHandler("c74b5a4469d554") #will only work from my IP
 
 VERBOSITY = 0
-HTTP_ADDRESS = "" # "" for anyone
+HTTP_ADDRESS = ""
 HTTP_PORT = 8181
 
 #iptables settings
@@ -73,7 +73,7 @@ class NFQueueThread(threading.Thread):
 		print("Altering iptables...")
 		#if these rules are very specific, they should allow for performance gains as the kernel will handle more requests directly
 		subprocess.run(shlex.split(f"iptables -I FORWARD -p {GAME_PROTOCOL} -d {self.target.ip} --dport {GAME_PORT} -j NFQUEUE --queue-num 1")) #ps4 destination
-		subprocess.run(shlex.split(f"iptables -I FORWARD -p {GAME_PROTOCOL} -s {self.target.ip} --dport {GAME_PORT} -j NFQUEUE --queue-num 1")) #ps4 source
+		subprocess.run(shlex.split(f"iptables -I FORWARD -p {GAME_PROTOCOL} -s {self.target.ip} --sport {GAME_PORT} -j NFQUEUE --queue-num 1")) #ps4 source
 		atexit.register(self.__del__) #force running __del__, even
 
 	def __del__(self):
@@ -82,13 +82,12 @@ class NFQueueThread(threading.Thread):
 		subprocess.run(shlex.split("iptables -X"))
 		atexit.unregister(self.__del__)
 
-	#returns remote IP address
-	def _checkPort(self, packet, port_number):
+	def _getRemoteIPAddress(self, packet):
 		ip = packet[net.IP]
 		try: #target is the PS4
-			if ip.src == self.target.ip and ip.sport == port_number:
+			if ip.src == self.target.ip:
 				return ip.dst
-			elif ip.dst == self.target.ip and ip.dport == port_number:
+			elif ip.dst == self.target.ip:
 				return ip.src
 		except AttributeError:
 			pass
@@ -98,11 +97,11 @@ class NFQueueThread(threading.Thread):
 		def callback(raw):
 			packet = net.IP(raw.get_payload())
 
-			if net.TCP in packet or net.DNS in packet or net.ICMP in packet: #ignore there as they're not used for "actual" game netcode
+			if net.DNS in packet or net.ICMP in packet: #ignore there as they're not used for "actual" game netcode
 				raw.accept()
 				return
 
-			remote_ip = self._checkPort(packet, GAME_PORT)
+			remote_ip = self._getRemoteIPAddress(packet)
 
 			if remote_ip and remote_ip.startswith("52.40.62."): #SONY/Amazon
 				raw.accept()
@@ -132,7 +131,6 @@ class NFQueueThread(threading.Thread):
 				return
 
 			raw.accept()
-			#print(packet.summary())
 
 		q = nfqueue()
 		q.bind(1, callback)

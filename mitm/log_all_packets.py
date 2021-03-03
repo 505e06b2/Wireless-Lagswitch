@@ -37,8 +37,7 @@ class NFQueueThread(threading.Thread):
 		subprocess.run(shlex.split("iptables -X"))
 		atexit.unregister(self.__del__)
 
-	#returns remote IP address
-	def _checkPort(self, packet):
+	def _getRemoteIPAddress(self, packet):
 		ip = packet[net.IP]
 		try: #target is the PS4
 			if ip.src == self.target.ip:
@@ -55,19 +54,15 @@ class NFQueueThread(threading.Thread):
 			packet = net.IP(raw.get_payload())
 
 			if net.TCP in packet or net.DNS in packet or net.ICMP in packet: #ignore there as they're not used for "actual" game netcode
-				raw.accept()
 				return
 
-			remote_ip = self._checkPort(packet)
+			remote_ip = self._getRemoteIPAddress(packet)
 
 			if remote_ip and remote_ip.startswith("52.40.62."): #SONY/Amazon
 				return
 
 			if remote_ip and ipaddress.ip_address(remote_ip).is_global:
 				print(packet.summary())
-
-
-			#print(packet.summary())
 
 		q = nfqueue()
 		q.bind(1, callback)
