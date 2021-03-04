@@ -5,12 +5,18 @@ import os, sys, scapy.all as net, packet_analysis
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import get_machines
 
+local_colour = "\x1b[96m"
+remote_colour = "\x1b[91m"
+
 def logPacket(raw):
 	raw.accept()
 	packet = net.IP(raw.get_payload())
 	if net.DNS in packet or net.ICMP in packet: #ignore there as they're not used for "actual" game netcode
 		return
-	print(packet.summary())
+	IP = packet[net.IP]
+	left = (local_colour if IP.src == machines["target"].ip else remote_colour) + f"{IP.src:>15}:{IP.sport:<5}\x1b[0m"
+	right = (local_colour if IP.dst == machines["target"].ip else remote_colour) + f"{IP.dst:>15}:{IP.dport:<5}\x1b[0m"
+	print(f"{left} > {right}")
 
 print("Finding network devices...")
 machines = get_machines.search(ps4=True)

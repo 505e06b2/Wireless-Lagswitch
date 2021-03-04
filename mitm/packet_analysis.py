@@ -215,6 +215,7 @@ if __name__ == "__main__":
 	parser.add_argument("--gateway_ip")
 	parser.add_argument("--target_ip")
 	parser.add_argument("--target_mac")
+	parser.add_argument("--ps4", action="store_true")
 
 	parser.add_argument("--game_protocol")
 	parser.add_argument("--game_port")
@@ -225,7 +226,7 @@ if __name__ == "__main__":
 
 	print("Finding network devices...")
 	machines = get_machines.search(
-		ps4=True,
+		ps4=args.ps4,
 		gateway_ip=args.gateway_ip,
 		target_ip=args.target_ip,
 		mac_startswith=args.target_mac
