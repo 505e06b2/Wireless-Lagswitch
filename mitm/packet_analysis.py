@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 
 import scapy.all as net
-import sys, os, time, subprocess, shlex, threading, ipaddress, json
-import atexit
+import time, subprocess, shlex, threading, ipaddress, json
+import atexit #force iptables fixing
 
 import http.server
 import urllib.parse
-
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import get_machines
 
 from netfilterqueue import NetfilterQueue as nfqueue # sudo apt install libnetfilter-queue-dev - sudo python3 -m pip install NetfilterQueue
 
@@ -207,16 +204,49 @@ class UIServer:
 
 
 if __name__ == "__main__":
-	print("Finding network devices...")
-	machines = get_machines.search(ps4=True)
+	import os, sys, scapy.all as net, packet_analysis
 
-	network_thread = NFQueueThread(machines["target"])
+	sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+	import get_machines
+
+	import argparse
+
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--gateway_ip")
+	parser.add_argument("--target_ip")
+	parser.add_argument("--target_mac")
+
+	parser.add_argument("--game_protocol")
+	parser.add_argument("--game_port")
+
+	parser.add_argument("--http_port")
+	parser.add_argument("--http_address")
+	args = parser.parse_args()
+
+	print("Finding network devices...")
+	machines = get_machines.search(
+		ps4=True,
+		gateway_ip=args.gateway_ip,
+		target_ip=args.target_ip,
+		mac_startswith=args.target_mac
+	)
+
+	game_settings = {}
+	if args.game_protocol: game_settings["game_protocol"] = args.game_protocol
+	if args.game_port: game_settings["game_port"] = args.game_port
+
+	http_settings = {}
+	if args.http_port: http_settings["server_port"] = int(args.http_port)
+	if args.http_address: http_settings["server_address"] = args.http_address
+
+	#will default to UDP
+	network_thread = packet_analysis.NFQueueThread(machines["target"], **game_settings)
 	try:
-		print("Starting nfqueue...")
+		print(f"Starting NFQueueThread - target: ({machines['target']}) - params: {game_settings}")
 		network_thread.start()
 
-		print(f"Starting HTTP server at http://{machines['this'].ip}:8181...")
-		UIServer().run()
+		print(f"Starting HTTP server at http://{machines['this'].ip}:{args.http_port if args.http_port else 8181}...")
+		packet_analysis.UIServer(**http_settings).run()
 
 	except KeyboardInterrupt:
 		print("Closing...")
