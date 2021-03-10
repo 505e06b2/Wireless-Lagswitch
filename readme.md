@@ -9,7 +9,7 @@ In the `basic` folder, there's a method that simply ARP cache poisons the PS4 fo
 ## MITM
 ### Extra Requirements
 - `sudo apt install libnetfilter-queue-dev`
-- `sudo python3 -m pip install NetfilterQueue ipinfo`
+- `sudo pip3 install -U git+https://github.com/kti/python-netfilterqueue`
 - An [ipinfo.io](http://ipinfo.io) token
 
 In the `mitm` folder, there are 2 scripts. These both require a Linux host, but should be easy enough to modify for other platforms. The first is `arp_poison_ps4`. This forces the network connection of the PS4 through the host device via ip_forward and ARP cache poison, while continuously poisoning the PS4 and Gateway to maintain access. The second is `analyse_packets`. This script creates an iptables rule that redirects any traffic for the PS4 to the `NFQueueThread` class, where it is manipulated. [It also starts an HTTP server for managing the script.](http://localhost:8181)
