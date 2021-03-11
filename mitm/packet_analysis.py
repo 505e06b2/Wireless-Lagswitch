@@ -7,7 +7,7 @@ import atexit #force iptables fixing
 import http.server
 import urllib.parse
 
-from netfilterqueue import NetfilterQueue as nfqueue # sudo apt install libnetfilter-queue-dev - sudo python3 -m pip install NetfilterQueue
+from netfilterqueue import NetfilterQueue as nfqueue # sudo apt install libnetfilter-queue-dev - sudo pip3 install -U git+https://github.com/kti/python-netfilterqueue
 
 import ipinfo #python3 -m pip install ipinfo
 ip_handler = ipinfo.getHandler("c74b5a4469d554") #will only work from my IP
