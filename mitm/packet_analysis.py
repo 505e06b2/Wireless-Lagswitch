@@ -12,6 +12,10 @@ from netfilterqueue import NetfilterQueue as nfqueue # sudo apt install libnetfi
 import ipinfo #python3 -m pip install ipinfo
 ip_handler = ipinfo.getHandler("c74b5a4469d554") #will only work from my IP
 
+take_two_ip_ranges = []#["185.56.65."] + [f"192.81.24{x}." for x in range(0, 8)]
+microsoft_ip_ranges = [f"20.{x}." for x in range(33, 129)]
+ip_range_whitelist = take_two_ip_ranges + microsoft_ip_ranges
+
 ip_catalogue = {}
 kill_all = False
 no_more = 0
@@ -90,10 +94,10 @@ class NFQueueThread(threading.Thread):
 			return
 
 		remote_ip = self._getRemoteIPAddress(packet)
-
-		if remote_ip and remote_ip.startswith("52.40.62."): #SONY/Amazon
-			raw.accept()
-			return
+		for x in ip_range_whitelist:
+			if remote_ip.startswith(x):
+				raw.accept()
+				return
 
 		if remote_ip and ipaddress.ip_address(remote_ip).is_global:
 			if remote_ip in ip_catalogue:

@@ -12,7 +12,7 @@ VERBOSITY = 0
 TIME_OFFLINE = 20 #seconds
 BAR_LENGTH = 10
 
-print("Finding network devices ", end="")
+print("Finding network devices ", end="", flush=True)
 machines = get_machines.search(ps4=True)
 
 #ensure that it can be cancelled

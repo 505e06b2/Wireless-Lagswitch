@@ -13,7 +13,10 @@ def logPacket(raw):
 	packet = net.IP(raw.get_payload())
 	if net.DNS in packet or net.ICMP in packet: #ignore there as they're not used for "actual" game netcode
 		return
+
 	IP = packet[net.IP]
+	remote_ip = IP.src if IP.src == machines["target"].ip else IP.dst
+
 	left = (local_colour if IP.src == machines["target"].ip else remote_colour) + f"{IP.src:>15}:{IP.sport:<5}\x1b[0m"
 	right = (local_colour if IP.dst == machines["target"].ip else remote_colour) + f"{IP.dst:>15}:{IP.dport:<5}\x1b[0m"
 	print(f"{left} > {right}")
