@@ -15,9 +15,9 @@ ip_handler = ipinfo.getHandler("c74b5a4469d554") #will only work from my IP
 
 take_two_ip_ranges = [net_range(x) for x in ["185.56.65.0/24", "192.81.240.0/21"]]
 microsoft_ip_ranges = [net_range(x) for x in ["20.33.0.0/16", "20.40.0.0/13", "20.128.0.0/16", "20.36.0.0/14", "20.48.0.0/12", "20.34.0.0/15", "20.64.0.0/10"]]
-ip_range_whitelist = []
+ip_range_whitelist = take_two_ip_ranges + microsoft_ip_ranges
 ip_range_hiddenlist = []
-ip_range_blacklist = []#take_two_ip_ranges + microsoft_ip_ranges
+ip_range_blacklist = []
 
 ip_catalogue = {}
 kill_all = False
