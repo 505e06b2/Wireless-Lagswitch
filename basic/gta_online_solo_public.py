@@ -9,7 +9,6 @@ import get_machines
 import atexit
 
 VERBOSITY = 0
-TIME_OFFLINE = 20 #seconds
 BAR_LENGTH = 10
 
 import argparse
@@ -18,6 +17,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--gateway_ip")
 parser.add_argument("--target_ip")
 parser.add_argument("--target_mac")
+
+parser.add_argument("--length", type=int, default=20)
 args = parser.parse_args()
 
 print("Finding network devices ", end="", flush=True)
@@ -40,15 +41,15 @@ time_started = time.time()
 try:
 	while True:
 		delta = int(time.time() - time_started)
-		if delta >= TIME_OFFLINE:
+		if delta >= args.length:
 			break
 
 		#hwdst is the actual recepient of the ARP packet, src is where the requests want to go, dst is where they end up
 		net.send(net.ARP(op="who-has", hwdst=machines["target"].mac, pdst=machines["target"].ip, psrc=machines["gateway"].ip), verbose=VERBOSITY)
 
-		bar = "=" * int(delta / TIME_OFFLINE * BAR_LENGTH)
+		bar = "=" * int(delta / args.length * BAR_LENGTH)
 		space = " " * (BAR_LENGTH - len(bar))
-		print("\r[%s%s] %ds left " % (bar, space, TIME_OFFLINE - delta), end="")
+		print("\r[%s%s] %ds left " % (bar, space, args.length - delta), end="")
 		time.sleep(1)
 	print("\rDone            %s" % (" " * BAR_LENGTH), end="") #clear the line
 

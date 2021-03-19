@@ -3,6 +3,7 @@
 import scapy.all as net
 import time, subprocess, shlex, threading, ipaddress, json
 import atexit #force iptables fixing
+from ipaddress import ip_network as net_range
 
 import http.server
 import urllib.parse
@@ -12,9 +13,11 @@ from netfilterqueue import NetfilterQueue as nfqueue # sudo apt install libnetfi
 import ipinfo #python3 -m pip install ipinfo
 ip_handler = ipinfo.getHandler("c74b5a4469d554") #will only work from my IP
 
-take_two_ip_ranges = []#["185.56.65."] + [f"192.81.24{x}." for x in range(0, 8)]
-microsoft_ip_ranges = [f"20.{x}." for x in range(33, 129)]
-ip_range_whitelist = take_two_ip_ranges + microsoft_ip_ranges
+take_two_ip_ranges = [net_range(x) for x in ["185.56.65.0/24", "192.81.240.0/21"]]
+microsoft_ip_ranges = [net_range(x) for x in ["20.33.0.0/16", "20.40.0.0/13", "20.128.0.0/16", "20.36.0.0/14", "20.48.0.0/12", "20.34.0.0/15", "20.64.0.0/10"]]
+ip_range_whitelist = []
+ip_range_hiddenlist = []
+ip_range_blacklist = []#take_two_ip_ranges + microsoft_ip_ranges
 
 ip_catalogue = {}
 kill_all = False
@@ -94,9 +97,24 @@ class NFQueueThread(threading.Thread):
 			return
 
 		remote_ip = self._getRemoteIPAddress(packet)
+		remote_address = ipaddress.ip_address(remote_ip)
+
 		for x in ip_range_whitelist:
-			if remote_ip.startswith(x):
+			if remote_address in x:
 				raw.accept()
+				return
+
+		for x in ip_range_hiddenlist:
+			if remote_address in x:
+				if kill_all:
+					raw.drop()
+				else:
+					raw.accept()
+				return
+
+		for x in ip_range_blacklist:
+			if remote_address in x:
+				raw.drop()
 				return
 
 		if remote_ip and ipaddress.ip_address(remote_ip).is_global:
