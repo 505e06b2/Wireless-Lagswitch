@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 import os, sys
-import subprocess
+import subprocess, threading
+from arp_poison_ps4 import ARPPoison
 
 if os.geteuid() != 0:
 	sys.exit("Must be root.")
 
-arp_poisoner = subprocess.Popen("./arp_poison_ps4.py", stdout=subprocess.DEVNULL)
+poison = ARPPoison()
+poison.start()
 print("Started ARP poison")
 
 unjoiner = None
@@ -23,6 +25,6 @@ try:
 			unjoiner = subprocess.Popen("./gta_become_unjoinable.py", stdout=subprocess.DEVNULL)
 
 except:
-	arp_poisoner.kill()
-	arp_poisoner.communicate()
+	poison.running = False
+	poison.join()
 	print("Stopped ARP poison")
