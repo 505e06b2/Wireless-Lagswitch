@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import scapy.all as net
-import time, subprocess, shlex, threading, ipaddress, json
+import time, subprocess, shlex, threading, ipaddress, json, sys
 import atexit #force iptables fixing
 from ipaddress import ip_network as net_range
 
@@ -74,6 +74,8 @@ class NFQueueThread(threading.Thread):
 		atexit.register(self.__del__) #force running __del__, even
 
 	def __del__(self):
+		if not sys.meta_path:
+			return
 		subprocess.run(shlex.split("iptables -F"))
 		subprocess.run(shlex.split("iptables -X"))
 		atexit.unregister(self.__del__)
