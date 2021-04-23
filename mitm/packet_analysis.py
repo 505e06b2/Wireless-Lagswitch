@@ -8,7 +8,9 @@ from ipaddress import ip_network as net_range
 import http.server
 import urllib.parse
 
-from netfilterqueue import NetfilterQueue as nfqueue # sudo apt install libnetfilter-queue-dev - sudo pip3 install -U git+https://github.com/kti/python-netfilterqueue
+# sudo apt install libnetfilter-queue-dev - sudo python3 -m pip install NetfilterQueue
+# sudo apt install libnetfilter-queue-dev - sudo python3 -m pip install -U git+https://github.com/kti/python-netfilterqueue
+from netfilterqueue import NetfilterQueue as nfqueue
 
 import ipinfo #python3 -m pip install ipinfo
 ip_handler = ipinfo.getHandler("c74b5a4469d554") #will only work from my IP
