@@ -1,0 +1,24 @@
+OUT=give_me_a_clean.exe
+
+CC=i686-w64-mingw32-gcc
+CFLAGS=-std=gnu99 -O2 -pipe -Wall -IWpdPack/Include -Iinclude -Wformat=0
+LDFLAGS=-LWpdPack/Lib -lwpcap -lws2_32 -Wl,-Bstatic -lpthread
+
+SOURCES=main.c
+
+$(OUT): $(SOURCES:%.c=obj/%.o)
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+obj/%.o: source/%.c
+	$(CC) -c -MD -MP $(CFLAGS) $< -o $@
+
+.PHONY: run clean
+
+run: $(OUT)
+	sudo WINEPREFIX=/tmp/wine_testing wine ./$(OUT)
+
+clean:
+	rm -f obj/*
+	rm -f $(OUT)*
+
+-include $(SOURCES:%.c=obj/%.d)
