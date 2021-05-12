@@ -1,10 +1,11 @@
 OUT=give_me_a_clean
 
 CC?=gcc
-CFLAGS=-std=gnu99 -O2 -pipe -Wall -IWpdPack/Include -Iinclude
-LDFLAGS=-lpcap -lpthread
+DEBUG?=1
+CFLAGS?=-std=gnu99 -O2 -pipe -Wall -Inpcap/Include -Iinclude -DDEBUG=$(DEBUG)
+LDFLAGS?=-lpcap -lpthread
 
-SOURCES=main.c
+SOURCES=main.c linux.c arp.c
 
 $(OUT): $(SOURCES:%.c=obj/%.o)
 	$(CC) $^ -o $@ $(LDFLAGS)

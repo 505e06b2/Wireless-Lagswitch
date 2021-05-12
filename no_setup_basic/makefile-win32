@@ -1,10 +1,11 @@
 OUT=give_me_a_clean.exe
 
 CC=i686-w64-mingw32-gcc
-CFLAGS=-std=gnu99 -O2 -pipe -Wall -IWpdPack/Include -Iinclude -Wformat=0
-LDFLAGS=-LWpdPack/Lib -lwpcap -lws2_32 -Wl,-Bstatic -lpthread
+DEBUG?=1
+CFLAGS?=-std=gnu99 -O2 -pipe -Wall -Inpcap/Include -Iinclude -Wformat=0 -D_WIN32_WINNT=0x0600 -DDEBUG=$(DEBUG)
+LDFLAGS?=-Lnpcap/Lib -lwpcap -lws2_32 -liphlpapi -Wl,-Bstatic -lpthread
 
-SOURCES=main.c
+SOURCES=main.c windows.c arp.c
 
 $(OUT): $(SOURCES:%.c=obj/%.o)
 	$(CC) $^ -o $@ $(LDFLAGS)
@@ -14,7 +15,7 @@ obj/%.o: source/%.c
 
 .PHONY: run clean
 
-run: $(OUT)
+run: $(OUT) #THIS WILL SEGFAULT AS IT USES GETADAPTERSADDRESS FOR GATEWAY IP
 	sudo WINEPREFIX=/tmp/wine_testing wine ./$(OUT)
 
 clean:

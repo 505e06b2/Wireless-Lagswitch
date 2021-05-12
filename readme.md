@@ -1,10 +1,22 @@
 # Wireless Lagswitch
 ``This repo contains tools for manipulating the network traffic for local devices - do not use these tools on networks you do not own. Skiddies GTFO.``
 
-The tools in this repo have been made specifically to "cut" lobbies in GTA: Online on PS4. There's both a "basic" way, and an "mitm" way, but both require Python 3, the `scapy` module, and administrator access to a machine on the network. All scripts should restore the network state when terminated with CTRL+C.
+The tools in this repo have been made specifically to "cut" lobbies in GTA: Online on PS4. There's both a "basic" way, and an "mitm" way, but both require Python 3, the `scapy` module, and administrator access to a machine on the network. All Python scripts should restore the network state when terminated with CTRL+C.
+
+## tl;dr
+### Good OS?
+```bash
+sudo python3 -m pip install scapy
+git clone https://github.com/505e06b2/Wireless-Lagswitch
+cd Wireless-Lagswitch/basic
+sudo ./toggle_arp_spoof.py
+```
+
+### Bad OS?
+Have fun with netcut (for the time being)
 
 ## Basic
-In the `basic` folder, there's a method that simply ARP cache poisons the PS4 for 20s, then restores the ARP state. This script should work cross-platform and is confirmed working for both Linux and a rooted Android device (running Termux).
+In the `basic` folder, there's a method that simply ARP cache poisons the PS4 for 20s, then restores the ARP state. This script should work cross-platform and is confirmed working for both Linux and a rooted Android device (running Termux). Personally, I'd recommend getting `toggle_arp_spoof.py` to work, since then you'd be able to precisely control when to lag out
 
 ## MITM
 ### Extra Requirements

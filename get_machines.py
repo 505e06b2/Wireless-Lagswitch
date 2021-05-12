@@ -2,7 +2,7 @@ import scapy.all as net
 
 import sys, os
 
-SonyInte_macs = ["00:04:1f","00:13:15","00:15:c1","00:19:c5","00:1d:0d","00:1f:a7","00:24:8d","00:d9:d1","00:e4:21","0c:fe:45","28:0d:fc","2c:cc:44","70:9e:29","78:c8:81","a8:e3:ee","bc:60:a7","c8:63:f1","f8:46:1c","f8:d0:ac","fc:0f:e6"]
+SonyEntertainment_macs = ["00:04:1f","00:13:15","00:15:c1","00:19:c5","00:1d:0d","00:1f:a7","00:24:8d","00:d9:d1","00:e4:21","0c:fe:45","28:0d:fc","2c:cc:44","70:9e:29","78:c8:81","a8:e3:ee","bc:60:a7","c8:63:f1","f8:46:1c","f8:d0:ac","fc:0f:e6"]
 HonHaiPr_macs = ["ec:0e:c4"] #my wlan mac starts with this
 
 class Machine:
@@ -36,7 +36,7 @@ def search(gateway_ip="", ip_range="", target_ip="", mac_startswith="", ps4=Fals
 	for i in answered:
 		if (not target_ip or target_ip == i[1].psrc) and (not mac_startswith or i[1].hwsrc.startswith(mac_startswith)):
 			if ps4:
-				if i[1].hwsrc[:8] in SonyInte_macs or i[1].hwsrc[:8] in HonHaiPr_macs:
+				if i[1].hwsrc[:8] in SonyEntertainment_macs or i[1].hwsrc[:8] in HonHaiPr_macs:
 					found.append((i[1].psrc, i[1].hwsrc))
 			else:
 				found.append((i[1].psrc, i[1].hwsrc))
@@ -69,4 +69,4 @@ if __name__ == "__main__":
 	parser.add_argument("--gateway_ip")
 
 	program_arguments = parser.parse_args()
-	print(default(program_arguments.gateway_ip))
+	print(search(gateway_ip=program_arguments.gateway_ip, ps4=True))
