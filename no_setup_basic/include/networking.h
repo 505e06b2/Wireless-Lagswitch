@@ -1,6 +1,9 @@
 #ifndef NETWORKING_TYPES_H
 #define NETWORKING_TYPES_H
 
+#include <pcap.h>
+#include <string.h>
+
 #if __MINGW32__
 	struct sockaddr_ll { //doesn't exist on Windows
 		unsigned short sll_family;   /* Always AF_PACKET */
@@ -43,5 +46,7 @@ typedef struct ThisMachine {
 	mac_address_t mac;
 	char name[36]; //36 since IP addresses + MAC are 35 chars long + \0
 } ThisMachine_t;
+
+pcap_if_t *findInterfaceInformation(ThisMachine_t *, pcap_if_t *);
 
 #endif

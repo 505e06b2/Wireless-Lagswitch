@@ -8,9 +8,9 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "networking_types.h"
+#include "networking.h"
 
-#define ARP_REPLY_WAIT_TIME 1
+#define ARP_REPLY_WAIT_TIME 1 //allow cmd parameter to allow for longer
 
 #pragma pack(push, 1)
 	struct EthHeader {

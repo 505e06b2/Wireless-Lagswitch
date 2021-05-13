@@ -5,7 +5,7 @@ DEBUG?=1
 CFLAGS?=-std=gnu99 -O2 -pipe -Wall -Inpcap/Include -Iinclude -DDEBUG=$(DEBUG)
 LDFLAGS?=-lpcap -lpthread
 
-SOURCES=main.c linux.c arp.c
+SOURCES=main.c linux.c arp.c networking.c
 
 $(OUT): $(SOURCES:%.c=obj/%.o)
 	$(CC) $^ -o $@ $(LDFLAGS)

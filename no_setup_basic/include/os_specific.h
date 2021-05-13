@@ -2,7 +2,7 @@
 #define OS_SPECIFIC_H
 
 #include <stdint.h>
-#include "networking_types.h"
+#include "networking.h"
 
 void os_getMACFromDeviceName(mac_address_t, const char *);
 
