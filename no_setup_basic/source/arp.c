@@ -98,7 +98,7 @@ void findPS4(Machine_t *gateway, Machine_t *ps4, const ThisMachine_t *this_machi
 	}
 
 	if(found_devices > 1) {
-		fprintf(stderr, "Found %u valid devices on the network; can't determine target", found_devices);
+		fprintf(stderr, "Found %lu valid devices on the network; can't determine target", found_devices);
 		exit(1);
 	} else if(found_devices < 1) {
 		fprintf(stderr, "No valid devices found on the network");

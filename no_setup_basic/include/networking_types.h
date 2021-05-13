@@ -15,6 +15,7 @@
 	#define AF_PACKET 17
 	typedef uint32_t in_addr_t;
 	#define ARPOP_REQUEST 1
+	#define ARPOP_REPLY 2
 #else
 	#include <arpa/inet.h> //htons & in_addr_t
 	#include <net/if_arp.h> //ARPOP_REQUEST

