@@ -124,11 +124,11 @@ int main() {
 	printf("%10s: ", "MAC"); printMac(this_machine.mac); printf("\n");
 	printf("%10s: ", "IPv4"); printIP(this_machine.ip); printf("\n");
 	printf("%10s: ", "Netmask"); printIP(this_machine.netmask); printf("\n");
-	printf("\n");
+	//gateway below
 
 	//start
 	pcap_t *pcap = pcap_open_live(this_machine_interface->name,
-		64,			// buffer len
+		100,			// buffer len
 		1,				// promiscuous mode
 		100,			// timeout
 		errbuf			// error buffer
@@ -157,6 +157,8 @@ int main() {
 	//create machines
 	Machine_t src_machine = {0}; //Gateway
 	os_getGatewayIPv4FromDeviceName(src_machine.ip, this_machine_interface->name);
+	printf("%10s: ", "Gateway"); printIP(src_machine.ip); printf("\n");
+	printf("\n");
 	pcap_freealldevs(all_devices);
 	all_devices = NULL;
 	this_machine_interface = NULL;
@@ -165,7 +167,7 @@ int main() {
 
 	findPS4(&src_machine, &dst_machine, &this_machine, pcap);
 
-	printMachineInfo("Gateway", &src_machine);
+	printMachineInfo("Router", &src_machine);
 	printMachineInfo("PS4", &dst_machine);
 
 	//fill restore packet with real values
