@@ -36,7 +36,7 @@ static FoundMachines_t *findMachinesOnTheNetwork(Machine_t *gateway, const ThisM
 		*(in_addr_t *)arp_request.arp.dst_ip = htonl(current_ipv4);
 		if(*(in_addr_t *)arp_request.arp.dst_ip == *(in_addr_t *)this_machine->ip) continue; //don't need to scan self
 		if(pcap_sendpacket(pcap, (const unsigned char *)&arp_request, sizeof(arp_request)) != 0) {
-			fprintf(stderr, "sendpacket error: %s", pcap_geterr(pcap));
+			fprintf(stderr, "pcap_sendpacket error: %s\n", pcap_geterr(pcap));
 		}
 	}
 
