@@ -13,7 +13,11 @@ $(OUT): $(SOURCES:%.c=obj/%.o)
 obj/%.o: source/%.c
 	$(CC) -c -MD -MP $(CFLAGS) $< -o $@
 
-.PHONY: run clean
+.PHONY: run clean release
+
+release:
+	make clean
+	make DEBUG=0
 
 run: $(OUT)
 	sudo ./$(OUT)

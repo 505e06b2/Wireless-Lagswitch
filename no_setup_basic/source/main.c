@@ -89,6 +89,10 @@ int main() {
 	#endif
 	//getopt_long - will only bother if requested
 
+	printf("            Session Cutter\n");
+	printf(" ========== Made by IO for RISE\n");
+	printf("\n");
+
 	pcap_if_t *all_devices;
 	pcap_findalldevs(&all_devices, errbuf);
 	if(all_devices == NULL) {
