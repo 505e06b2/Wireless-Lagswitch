@@ -10,8 +10,6 @@
 
 #include "networking.h"
 
-#define ARP_REPLY_WAIT_TIME 1 //allow cmd parameter to allow for longer
-
 #pragma pack(push, 1)
 	struct EthHeader {
 		mac_address_t dst;

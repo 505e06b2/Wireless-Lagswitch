@@ -4,12 +4,12 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <getopt.h>
 #include <pthread.h>
 
 #include "arp.h"
 #include "networking.h"
 #include "os_specific.h"
+#include "args.h"
 
 #if __MINGW32__
 	#include <windows.h> //sleep
@@ -17,12 +17,14 @@
 	#include <unistd.h> //sleep
 #endif
 
+extern ip_address_t ARGUMENT_gateway_ip;
+
 char errbuf[PCAP_ERRBUF_SIZE];
 ARPPacket_t poison_packet;
 ARPPacket_t restore_packet;
 int poison = 0; //determine if we should currently poison
 
-pcap_t *openPcap(const char *interface_name) {
+static pcap_t *openPcap(const char *interface_name) {
 	pcap_t *pcap = pcap_open_live(interface_name,
 		100,			// buffer len
 		1,				// promiscuous mode
@@ -55,17 +57,17 @@ pcap_t *openPcap(const char *interface_name) {
 	return pcap;
 }
 
-void printMac(const mac_address_t mac_array) {
+static void printMac(const mac_address_t mac_array) {
 	printf("%02x", mac_array[0]);
 	for(int i = 1; i < 6; i++) printf(":%02x", mac_array[i]);
 }
 
-void printIP(const ip_address_t ip) {
+static void printIP(const ip_address_t ip) {
 	const uint8_t *ptr = ip; //remove warning with cast
 	printf("%3u.%3u.%3u.%3u", ptr[0], ptr[1], ptr[2], ptr[3]);
 }
 
-void *arpThreadFunction(void *arg) {
+static void *arpThreadFunction(void *arg) {
 	pcap_t *pcap = (pcap_t *)arg;
 	int ret;
 	while(1) {
@@ -83,14 +85,15 @@ void *arpThreadFunction(void *arg) {
 	return NULL;
 }
 
-int main() {
+int main(int argc, char **argv) {
+	parseCommandlineParameters(argc, argv);
+
 	#if DEBUG
 		printf("\n\n                 !!! Debug Build !!!\n\n");
 	#endif
-	//getopt_long - will only bother if requested
 
 	printf("            Session Cutter\n");
-	printf(" ========== Made by IO for RISE\n");
+	printf(" ========== github.com/505e06b2/Wireless-Lagswitch\n");
 	printf("\n");
 
 	pcap_if_t *all_devices;
@@ -105,7 +108,11 @@ int main() {
 	pcap_if_t *this_machine_interface = findInterfaceInformation(&this_machine, all_devices);
 
 	Machine_t src_machine = {0}; //Gateway
-	os_getGatewayIPv4FromDeviceName(src_machine.ip, this_machine_interface->name);
+	if(*(in_addr_t *)ARGUMENT_gateway_ip != 0) {
+		memcpy(src_machine.ip, ARGUMENT_gateway_ip, sizeof(ip_address_t));
+	} else {
+		os_getGatewayIPv4FromDeviceName(src_machine.ip, this_machine_interface->name);
+	}
 
 	printf("%10s: %-15s", "Interface", this_machine.name); printf("\n");
 	printf("%10s: ", "MAC"); printMac(this_machine.mac); printf("\n");
@@ -150,22 +157,12 @@ int main() {
 	memcpy(&poison_packet, &restore_packet, sizeof(poison_packet));
 	memset(&poison_packet.arp.src_mac, 0, sizeof(poison_packet.arp.src_mac)); //send your gateway requests to 00:00:00:00:00:00 >:)
 
-	#if DEBUG
-		{
-			FILE *f = fopen("/tmp/packet_hexdump.bytes", "wb");
-			if(f) { //just ignore it
-				fwrite((uint8_t *)&poison_packet, sizeof(uint8_t), sizeof(ARPPacket_t), f);
-				fclose(f);
-				printf("\nDEBUG: Wrote raw packet to /tmp/packet_hexdump.bytes\n");
-			}
-		}
-	#endif
-
 	pthread_t arp_thread;
 	pthread_create(&arp_thread, NULL, arpThreadFunction, (void*)pcap);
-	printf("\nReady to cut - press ENTER to toggle\n");
+	printf("\n =================================================\n");
+	printf("\n            Ready to cut\n");
 	while(1) {
-		printf("Switch is currently %s", (poison) ? "ON" : "OFF");
+		printf("  [ %s ] - Press ENTER to toggle", (poison) ? " ON" : "OFF");
 		fflush(stdout);
 		getchar();
 		poison = !poison;

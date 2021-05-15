@@ -5,7 +5,7 @@ DEBUG?=1
 CFLAGS?=-std=gnu99 -O2 -pipe -Wall -Inpcap/Include -Iinclude -Wformat=0 -D_WIN32_WINNT=0x0600 -DDEBUG=$(DEBUG)
 LDFLAGS?=-Lnpcap/Lib -lwpcap -lws2_32 -liphlpapi -Wl,-Bstatic -lpthread
 
-SOURCES=main.c windows.c arp.c networking.c
+SOURCES=main.c windows.c arp.c networking.c args.c
 
 $(OUT): $(SOURCES:%.c=obj/%.o)
 	$(CC) $^ -o $@ $(LDFLAGS)

@@ -1,5 +1,9 @@
 #include "arp.h"
 
+extern ip_address_t ARGUMENT_target_ip;
+extern mac_address_t ARGUMENT_target_mac;
+extern uint32_t ARGUMENT_arp_timeout;
+
 static FoundMachines_t *findMachinesOnTheNetwork(Machine_t *gateway, const ThisMachine_t *this_machine, pcap_t *pcap) {
 	uint32_t host_order_netmask = ntohl(*(in_addr_t *)this_machine->netmask);
 	uint32_t min_ipv4 = ntohl(*(in_addr_t *)gateway->ip) & host_order_netmask; //will be in host format, so it can be incremented properly
@@ -43,7 +47,10 @@ static FoundMachines_t *findMachinesOnTheNetwork(Machine_t *gateway, const ThisM
 	//wait for responses
 	int next_ret;
 	struct pcap_pkthdr *response_packet_header;
-	for(time_t now = time(NULL); (time(NULL) - now) < ARP_REPLY_WAIT_TIME; ) { //wait ARP_REPLY_WAIT_TIME seconds
+	#if DEBUG
+		printf("DEBUG: Waiting %u second(s) for ARP responses\n", ARGUMENT_arp_timeout);
+	#endif
+	for(time_t now = time(NULL); (time(NULL) - now) < ARGUMENT_arp_timeout; ) { //wait ARP_REPLY_WAIT_TIME seconds
 		next_ret = pcap_next_ex(pcap, &response_packet_header, (const unsigned char **)&arp_response);
 		if(next_ret != 1) { //if not got a new packet, don't continue
 			if(next_ret == PCAP_ERROR) fprintf(stderr, "Error reading packet\n");
@@ -64,6 +71,11 @@ static FoundMachines_t *findMachinesOnTheNetwork(Machine_t *gateway, const ThisM
 			}
 		}
 	}
+	//never found gateway MAC
+	if(memcmp(gateway->mac, "\0\0\0\0\0\0", sizeof(mac_address_t)) == 0) {
+		fprintf(stderr, "Didn't find the gateway's MAC address (is the IP correct?)\n");
+		exit(2);
+	}
 	return ret;
 }
 
@@ -76,19 +88,35 @@ static const mac_address_prefix_t known_ps4_mac_prefixes[] = {
 
 void findPS4(Machine_t *gateway, Machine_t *ps4, const ThisMachine_t *this_machine, pcap_t *pcap) {
 	size_t found_devices = 0;
+	int using_commandline_ip = 0;
+	int using_commandline_mac = 0;
 	FoundMachines_t *previous_machine = NULL;
 	FoundMachines_t *current_machine = findMachinesOnTheNetwork(gateway, this_machine, pcap);
 
+	if(memcmp(ARGUMENT_target_ip, "\0\0\0\0", sizeof(ip_address_t)) != 0) using_commandline_ip = 1;
+	if(memcmp(ARGUMENT_target_mac, "\0\0\0\0\0\0", sizeof(mac_address_t)) != 0) using_commandline_mac = 1;
+
 	while(current_machine) {
-		for(size_t i = 0; i < sizeof(known_ps4_mac_prefixes); i++) {
-			if(memcmp(current_machine->mac, known_ps4_mac_prefixes[i], sizeof(mac_address_prefix_t)) == 0) {
-				#if DEBUG
-					printf("DEBUG: Found PS4 mac: %02x:%02x:%02x:%02x:%02x:%02x\n", current_machine->mac[0], current_machine->mac[1], current_machine->mac[2], current_machine->mac[3], current_machine->mac[4], current_machine->mac[5]);
-				#endif
-				memcpy(ps4->ip, current_machine->ip, sizeof(ip_address_t));
-				memcpy(ps4->mac, current_machine->mac, sizeof(mac_address_t));
-				found_devices++;
-				break;
+		//check hasn't been specified, continue || check has been specified and passes, continue
+		if(using_commandline_ip == 0 || memcmp(current_machine->ip, ARGUMENT_target_ip, sizeof(ip_address_t)) == 0) {
+			if(using_commandline_mac) {
+				if(memcmp(current_machine->mac, ARGUMENT_target_mac, sizeof(mac_address_t)) == 0) {
+					memcpy(ps4->ip, current_machine->ip, sizeof(ip_address_t));
+					memcpy(ps4->mac, current_machine->mac, sizeof(mac_address_t));
+					found_devices++;
+				}
+			} else {
+				for(size_t i = 0; i < sizeof(known_ps4_mac_prefixes); i++) {
+					if(memcmp(current_machine->mac, known_ps4_mac_prefixes[i], sizeof(mac_address_prefix_t)) == 0) {
+						#if DEBUG
+							printf("DEBUG: Found PS4 mac: %02x:%02x:%02x:%02x:%02x:%02x\n", current_machine->mac[0], current_machine->mac[1], current_machine->mac[2], current_machine->mac[3], current_machine->mac[4], current_machine->mac[5]);
+						#endif
+						memcpy(ps4->ip, current_machine->ip, sizeof(ip_address_t));
+						memcpy(ps4->mac, current_machine->mac, sizeof(mac_address_t));
+						found_devices++;
+						break;
+					}
+				}
 			}
 		}
 

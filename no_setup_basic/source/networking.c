@@ -38,12 +38,12 @@ pcap_if_t *findInterfaceInformation(ThisMachine_t *this_machine, pcap_if_t *all_
 	}
 
 	//will always trigger on Windows
-	if(memcmp(this_machine->mac, "\0\0\0\0\0\0", 6) == 0) {
+	if(memcmp(this_machine->mac, "\0\0\0\0\0\0", sizeof(mac_address_t)) == 0) {
 		os_getMACFromDeviceName(this_machine->mac, ret->name); //attempt 2 - OS specific
 	}
 
 	//check again and if failed, that's it...
-	if(memcmp(this_machine->mac, "\0\0\0\0\0\0", 6) == 0) {
+	if(memcmp(this_machine->mac, "\0\0\0\0\0\0", sizeof(mac_address_t)) == 0) {
 		fprintf(stderr, "Cannot find MAC address for device: %s", ret->name);
 		if(ret->description) fprintf(stderr, " (%s)", ret->description);
 		fprintf(stderr, "\n");
