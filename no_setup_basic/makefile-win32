@@ -16,8 +16,8 @@ obj/%.o: source/%.c
 .PHONY: run clean release
 
 release:
-	make clean
-	make DEBUG=0
+	make -f makefile-win32 clean
+	make -f makefile-win32 DEBUG=0
 
 run: $(OUT) #THIS WILL SEGFAULT AS IT USES GETADAPTERSADDRESS FOR GATEWAY IP
 	sudo WINEPREFIX=/tmp/wine_testing wine ./$(OUT)

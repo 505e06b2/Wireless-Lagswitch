@@ -3,6 +3,7 @@
 #define DEFAULT_ARP_TIMEOUT 1
 
 ip_address_t ARGUMENT_gateway_ip = {0};
+ip_address_t ARGUMENT_netmask = {0};
 ip_address_t ARGUMENT_target_ip = {0};
 mac_address_t ARGUMENT_target_mac = {0};
 uint32_t ARGUMENT_arp_timeout = DEFAULT_ARP_TIMEOUT;
@@ -27,6 +28,7 @@ void parseCommandlineParameters(int argc, char **argv) {
 
     struct option long_options[] = {
 		{"gateway_ip", required_argument, NULL, 'g'},
+		{"netmask", required_argument, NULL, 'n'},
 		{"target_ip", required_argument, NULL, 'i'},
 		{"target_mac", required_argument, NULL, 'm'},
 		{"arp_timeout", required_argument, NULL, 't'},
@@ -35,7 +37,7 @@ void parseCommandlineParameters(int argc, char **argv) {
 	};
 
 	while(1) {
-		c = getopt_long(argc, argv, "g:i:m:t:h", long_options, &option_index);
+		c = getopt_long(argc, argv, "g:n:i:m:t:h", long_options, &option_index);
 		if(c == -1)
 			break;
 
@@ -43,6 +45,15 @@ void parseCommandlineParameters(int argc, char **argv) {
 			case 'g':
 				getIPFromString(ARGUMENT_gateway_ip, optarg);
 				break;
+
+			case 'n': {
+					int netmask_bits = strtol(optarg, NULL, 10);
+					if(netmask_bits < 0 || netmask_bits > 32) {
+						fprintf(stderr, "Invalid netmask bits: %d\n", netmask_bits);
+						exit(2);
+					}
+					*(in_addr_t*)ARGUMENT_netmask = htonl(~(0xffffffff >> netmask_bits));
+				} break;
 
 			case 'i':
 				getIPFromString(ARGUMENT_target_ip, optarg);
@@ -58,11 +69,12 @@ void parseCommandlineParameters(int argc, char **argv) {
 				break;
 
 			case 'h':
-				printf("usage: give_me_a_clean [-h] [-g GATEWAY_IP] [-i TARGET_IP] [-m TARGET_MAC] [-t ARP_TIMEOUT]");
+				printf("usage: give_me_a_clean [-h] [-g GATEWAY_IP] [-n NETMASK] [-i TARGET_IP] [-m TARGET_MAC] [-t ARP_TIMEOUT]");
 				printf("\n");
 				printf("optional arguments:\n");
 				printf("-h, --help         Show this help message\n");
 				printf("-g, --gateway_ip   Specify the gateway IP address\n");
+				printf("-n, --netmask      Specify the netmask to use for network search\n");
 				printf("-i, --target_ip    Specify the target IP address\n");
 				printf("-m, --target_mac   Specify the target MAC address\n");
 				printf("-t, --arp_timeout  Specify the length of time to wait for ARP responses (in seconds)\n");

@@ -18,6 +18,7 @@
 #endif
 
 extern ip_address_t ARGUMENT_gateway_ip;
+extern ip_address_t ARGUMENT_netmask;
 
 char errbuf[PCAP_ERRBUF_SIZE];
 ARPPacket_t poison_packet;
@@ -106,6 +107,7 @@ int main(int argc, char **argv) {
 	//create machines
 	ThisMachine_t this_machine = {0};
 	pcap_if_t *this_machine_interface = findInterfaceInformation(&this_machine, all_devices);
+	if(*(in_addr_t *)ARGUMENT_netmask) memcpy(this_machine.netmask, ARGUMENT_netmask, sizeof(ip_address_t));
 
 	Machine_t src_machine = {0}; //Gateway
 	if(*(in_addr_t *)ARGUMENT_gateway_ip != 0) {

@@ -14,8 +14,7 @@ make release
 
 ### Windows
 1. [Download and start the npcap installer](https://nmap.org/npcap/)
-2. For the options that come up, choose these (the Administrator option will keep you safe):
- ![](https://raw.githubusercontent.com/505e06b2/Wireless-Lagswitch/master/no_setup_basic/nmap_setup.png)
+2. Choose these settings for npcap:
  ![](https://raw.githubusercontent.com/505e06b2/Wireless-Lagswitch/master/no_setup_basic/npcap_1_00_setup.png)
  3. Download the [Session Cutter](https://github.com/505e06b2/Wireless-Lagswitch/releases)
 
