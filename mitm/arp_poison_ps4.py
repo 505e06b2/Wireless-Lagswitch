@@ -40,8 +40,8 @@ class ARPPoison(threading.Thread):
 			return
 		self.running = False
 		if self.stdout: print("Restoring ARP...")
-		net.send(net.ARP(op="is-at", hwdst="ff:ff:ff:ff:ff:ff", pdst=self.machines["target"].ip, hwsrc=self.machines["gateway"].mac, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
-		net.send(net.ARP(op="is-at", hwdst="ff:ff:ff:ff:ff:ff", pdst=self.machines["gateway"].ip, hwsrc=self.machines["target"].mac, psrc=self.machines["target"].ip), verbose=VERBOSITY)
+		net.send(net.ARP(op="is-at", hwdst=self.machines["target"].mac, pdst=self.machines["target"].ip, hwsrc=self.machines["gateway"].mac, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
+		net.send(net.ARP(op="is-at", hwdst=self.machines["gateway"].mac, pdst=self.machines["gateway"].ip, hwsrc=self.machines["target"].mac, psrc=self.machines["target"].ip), verbose=VERBOSITY)
 
 		if self.stdout: print("Disabling IP Forward...")
 		with open("/proc/sys/net/ipv4/ip_forward", "w") as f:
