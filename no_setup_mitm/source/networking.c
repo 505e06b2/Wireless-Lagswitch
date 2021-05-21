@@ -3,7 +3,7 @@
 
 void setPcapFilter(pcap_t *pcap, const char *filter) {
 	struct bpf_program pcap_filter_arp;
-	if(pcap_compile(pcap, &pcap_filter_arp, filter, 0, PCAP_NETMASK_UNKNOWN) == -1) {
+	if(pcap_compile(pcap, &pcap_filter_arp, filter, 1, PCAP_NETMASK_UNKNOWN) == -1) {
 		fprintf(stderr, "Couldn't parse arp filter: %s\n", pcap_geterr(pcap));
 		exit(2);
 	}

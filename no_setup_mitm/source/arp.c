@@ -1,5 +1,8 @@
 #include "arp.h"
 
+extern char *errbuf; //main.c
+
+//args.c
 extern ip_address_t ARGUMENT_target_ip;
 extern mac_address_t ARGUMENT_target_mac;
 extern uint32_t ARGUMENT_arp_timeout;
@@ -40,15 +43,19 @@ static FoundMachines_t *findMachinesOnTheNetwork(Machine_t *gateway, const ThisM
 		*(in_addr_t *)arp_request.arp.dst_ip = htonl(current_ipv4);
 		if(*(in_addr_t *)arp_request.arp.dst_ip == *(in_addr_t *)this_machine->ip) continue; //don't need to scan self
 		if(pcap_sendpacket(pcap, (const unsigned char *)&arp_request, sizeof(arp_request)) != 0) {
-			#if DEBUG //debug as these errors are annoying in Termux
+			#if DEBUG //debug as these errors are annoying in Termux - may need to account for Try Again?
 				fprintf(stderr, "pcap_sendpacket error: %s\n", pcap_geterr(pcap));
 			#endif
 		}
 	}
 
-	setPcapFilter(pcap, "arp [6:2] = 2");
-
 	//wait for responses
+	setPcapFilter(pcap, "arp [6:2] = 2");
+	if(pcap_setnonblock(pcap, 1, errbuf) == -1) { //or could be an infinite wait
+		fprintf(stderr, "Error setting non blocking mode: %s\n", errbuf);
+		return NULL;
+	}
+
 	int next_ret;
 	struct pcap_pkthdr *response_packet_header;
 	#if DEBUG
@@ -80,6 +87,13 @@ static FoundMachines_t *findMachinesOnTheNetwork(Machine_t *gateway, const ThisM
 		fprintf(stderr, "Didn't find the gateway's MAC address (is the IP correct?)\n");
 		exit(2);
 	}
+
+	//back to default (blocking)
+	if(pcap_setnonblock(pcap, 0, errbuf) == -1) { //or could be an infinite wait
+		fprintf(stderr, "Error setting non blocking mode: %s\n", errbuf);
+		return NULL;
+	}
+
 	return ret;
 }
 
@@ -136,4 +150,20 @@ void findPS4(Machine_t *gateway, Machine_t *ps4, const ThisMachine_t *this_machi
 		fprintf(stderr, "No valid devices found on the network\n");
 		exit(1);
 	}
+}
+
+void fillARPPacket(ARPPacket_t *packet, Machine_t *src_machine, Machine_t *dst_machine, uint16_t arp_operation, mac_address_t interface_mac) {
+	memcpy(packet->eth.dst, dst_machine->mac, sizeof(mac_address_t));
+	memcpy(packet->eth.src, interface_mac, sizeof(mac_address_t));
+	packet->eth.ethertype = htons(0x0806);
+
+	packet->arp.htype = htons(0x0001);
+	packet->arp.ptype = htons(0x0800);
+	packet->arp.hlen = sizeof(mac_address_t);
+	packet->arp.plen = sizeof(ip_address_t);
+	packet->arp.op = htons(arp_operation);
+	memcpy(packet->arp.src_mac, src_machine->mac, sizeof(mac_address_t));
+	memcpy(packet->arp.src_ip, src_machine->ip, sizeof(ip_address_t));
+	memcpy(packet->arp.dst_mac, dst_machine->mac, sizeof(mac_address_t));
+	memcpy(packet->arp.dst_ip, dst_machine->ip, sizeof(ip_address_t));
 }

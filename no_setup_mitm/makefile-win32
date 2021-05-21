@@ -1,0 +1,29 @@
+OUT=mitm_give_me_a_clean.exe
+
+CC=i686-w64-mingw32-gcc
+DEBUG?=1
+CFLAGS?=-std=gnu99 -O2 -pipe -Wall -Inpcap/Include -Iinclude -Wformat=0 -D_WIN32_WINNT=0x0600 -DDEBUG=$(DEBUG)
+LDFLAGS?=-Lnpcap/Lib -lwpcap -lws2_32 -liphlpapi -Wl,-Bstatic -lpthread
+
+SOURCES=main.c windows.c arp.c networking.c args.c routing.c
+
+$(OUT): $(SOURCES:%.c=obj/%.o)
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+obj/%.o: source/%.c
+	$(CC) -c -MD -MP $(CFLAGS) $< -o $@
+
+.PHONY: run clean release
+
+release:
+	make -f makefile-win32 clean
+	make -f makefile-win32 DEBUG=0
+
+run: $(OUT) #THIS WILL SEGFAULT AS IT USES GETADAPTERSADDRESS FOR GATEWAY IP
+	sudo WINEPREFIX=/tmp/wine_testing wine ./$(OUT)
+
+clean:
+	rm -f obj/*
+	rm -f $(OUT)*
+
+-include $(SOURCES:%.c=obj/%.d)
