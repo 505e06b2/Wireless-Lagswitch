@@ -36,7 +36,7 @@ pcap_t *signal_handler_pcap = NULL;
 static pcap_t *openPcap(const char *interface_name) {
 	pcap_t *pcap = pcap_open_live(interface_name,
 		MTU, //buffer length
-		PCAP_OPENFLAG_PROMISCUOUS | PCAP_OPENFLAG_MAX_RESPONSIVENESS, //flags
+		PCAP_OPENFLAG_PROMISCUOUS | PCAP_OPENFLAG_MAX_RESPONSIVENESS | PCAP_OPENFLAG_NOCAPTURE_LOCAL | PCAP_OPENFLAG_NOCAPTURE_RPCAP, //flags
 		100, //timeout (ms)
 		errbuf //error buffer
 	);
@@ -76,8 +76,9 @@ static void *arpThreadFunction(void *arg) {
 static void restoreNetwork(int x) {
 	if(running == 0) return; //already exiting
 	running = 0;
-	printf("\nRestoring network...\n");
-	for(int i = 0; i < 3; i++) {
+	const int seconds_left = 10;
+	printf("\nRestoring network for %ds...\n", seconds_left);
+	for(int i = 0; i < seconds_left; i++) {
 		pcap_sendpacket(signal_handler_pcap, (const unsigned char *)&restore_ps4_packet, sizeof(ARPPacket_t));
 		pcap_sendpacket(signal_handler_pcap, (const unsigned char *)&restore_gateway_packet, sizeof(ARPPacket_t));
 		sleep(1);

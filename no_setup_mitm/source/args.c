@@ -7,6 +7,7 @@ ip_address_t ARGUMENT_netmask = {0};
 ip_address_t ARGUMENT_target_ip = {0};
 mac_address_t ARGUMENT_target_mac = {0};
 uint32_t ARGUMENT_arp_timeout = DEFAULT_ARP_TIMEOUT;
+char *ARGUMENT_interface_name = NULL;
 
 static void getMACFromString(mac_address_t mac_out, const char *str) {
 	if(sscanf(str, "%3hhx:%3hhx:%3hhx:%3hhx:%3hhx:%3hhx", mac_out, mac_out+1, mac_out+2, mac_out+3, mac_out+4, mac_out+5) < 6) {
@@ -32,12 +33,13 @@ void parseCommandlineParameters(int argc, char **argv) {
 		{"target_ip", required_argument, NULL, 'i'},
 		{"target_mac", required_argument, NULL, 'm'},
 		{"arp_timeout", required_argument, NULL, 't'},
+		{"interface", required_argument, NULL, 'a'},
 		{"help", no_argument, NULL, 'h'},
 		{0, 0, 0, 0}
 	};
 
 	while(1) {
-		c = getopt_long(argc, argv, "g:n:i:m:t:h", long_options, &option_index);
+		c = getopt_long(argc, argv, "g:n:i:m:t:a:h", long_options, &option_index);
 		if(c == -1)
 			break;
 
@@ -68,8 +70,12 @@ void parseCommandlineParameters(int argc, char **argv) {
 				if(ARGUMENT_arp_timeout == 0) ARGUMENT_arp_timeout = DEFAULT_ARP_TIMEOUT;
 				break;
 
+			case 'a':
+				ARGUMENT_interface_name = optarg;
+				break;
+
 			case 'h':
-				printf("usage: give_me_a_clean [-h] [-g GATEWAY_IP] [-n NETMASK] [-i TARGET_IP] [-m TARGET_MAC] [-t ARP_TIMEOUT]");
+				printf("usage: give_me_a_clean [-h] [-g GATEWAY_IP] [-n NETMASK] [-i TARGET_IP] [-m TARGET_MAC] [-t ARP_TIMEOUT] [-a INTERFACE]");
 				printf("\n");
 				printf("optional arguments:\n");
 				printf("-h, --help         Show this help message\n");
@@ -78,6 +84,7 @@ void parseCommandlineParameters(int argc, char **argv) {
 				printf("-i, --target_ip    Specify the target IP address\n");
 				printf("-m, --target_mac   Specify the target MAC address\n");
 				printf("-t, --arp_timeout  Specify the length of time to wait for ARP responses (in seconds)\n");
+				printf("-a, --interface    Specify the interface to use to send/receive packets\n");
 				exit(1);
 
 			default:

@@ -1,6 +1,8 @@
 #include "networking.h"
 #include "os_specific.h"
 
+extern char *ARGUMENT_interface_name;
+
 void setPcapFilter(pcap_t *pcap, const char *filter) {
 	struct bpf_program pcap_filter_arp;
 	if(pcap_compile(pcap, &pcap_filter_arp, filter, 1, PCAP_NETMASK_UNKNOWN) == -1) {
@@ -19,7 +21,11 @@ pcap_if_t *findInterfaceInformation(ThisMachine_t *this_machine, pcap_if_t *all_
 
 	for(pcap_if_t *ptr = all_devices; ptr->next; ptr = ptr->next) {
 		if(ptr->addresses == NULL) continue;
-		//if(strcmp(ptr->name, wanted_name) != 0) continue; //add it later?, just use first working one for now
+		if(ARGUMENT_interface_name) {
+			if(strcmp(ptr->name, ARGUMENT_interface_name) != 0 || //Linux
+				(ptr->description && strcmp(ptr->description, ARGUMENT_interface_name) != 0)) continue; //Windows non-GUID
+		}
+
 		for(pcap_addr_t *addr_ptr = ptr->addresses; addr_ptr; addr_ptr = addr_ptr->next) {
 			switch(addr_ptr->addr->sa_family) { // /usr/include/bits/socket.h
 				case AF_PACKET: {//(17) MAC for Linux + WINE - NETBIOS for Windows (which probably won't trigger)
@@ -28,11 +34,13 @@ pcap_if_t *findInterfaceInformation(ThisMachine_t *this_machine, pcap_if_t *all_
 				} break;
 
 				case AF_INET: {//(2) ipv4 - if any of these are NULL, just crash lol
+					const struct sockaddr_in *netmask = (struct sockaddr_in *)addr_ptr->netmask;
+					if(netmask->sin_addr.s_addr == 0xffffffff) break; //this is not a usable network for this (tun0 has a netmask of 32)
+					if(netmask->sin_addr.s_addr <= 0x0000ffff) break; //way too many ARP requests otherwise
+					*((in_addr_t *)this_machine->netmask) = netmask->sin_addr.s_addr;
+
 					const struct sockaddr_in *address = (struct sockaddr_in *)addr_ptr->addr;
 					*((in_addr_t *)this_machine->ip) = address->sin_addr.s_addr;
-
-					const struct sockaddr_in *netmask = (struct sockaddr_in *)addr_ptr->netmask;
-					*((in_addr_t *)this_machine->netmask) = netmask->sin_addr.s_addr;
 				} break;
 			}
 		}
@@ -46,7 +54,8 @@ pcap_if_t *findInterfaceInformation(ThisMachine_t *this_machine, pcap_if_t *all_
 
 	if(ret == NULL || *((in_addr_t *)this_machine->ip) == 0 || *(in_addr_t *)this_machine->netmask == 0) {
 		fprintf(stderr, "No valid interfaces found - ensure IPv4 is enabled\n");
-		return NULL;
+		//return NULL;
+		exit(2);
 	}
 
 	//will always trigger on Windows
@@ -59,7 +68,8 @@ pcap_if_t *findInterfaceInformation(ThisMachine_t *this_machine, pcap_if_t *all_
 		fprintf(stderr, "Cannot find MAC address for device: %s", ret->name);
 		if(ret->description) fprintf(stderr, " (%s)", ret->description);
 		fprintf(stderr, "\n");
-		return NULL;
+		exit(2);
+		//return NULL;
 	}
 
 	return ret;
