@@ -71,6 +71,7 @@ class NFQueueThread(threading.Thread):
 		#if these rules are very specific, they should allow for performance gains as the kernel will handle more requests directly
 		dport = f"--dport {game_port}" if game_port != 0 else ""
 		sport = f"--sport {game_port}" if game_port != 0 else ""
+		#print(f"iptables -I FORWARD -p {game_protocol} -d {self.target.ip} {dport} -j NFQUEUE --queue-num 1")
 		subprocess.run(shlex.split(f"iptables -I FORWARD -p {game_protocol} -d {self.target.ip} {dport} -j NFQUEUE --queue-num 1")) #ps4 destination
 		subprocess.run(shlex.split(f"iptables -I FORWARD -p {game_protocol} -s {self.target.ip} {sport} -j NFQUEUE --queue-num 1")) #ps4 source
 		atexit.register(self.__del__) #force running __del__, even
