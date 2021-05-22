@@ -70,7 +70,7 @@ static void restoreNetwork(int x) {
 	running = 0;
 	if(system("stty sane")) fprintf(stderr, "Can't put terminal into sane mode\n");
 	const int seconds_left = 15;
-	printf("\nRestoring network for %ds...\n", seconds_left);
+	printf("\n            Restoring network for %ds...\n", seconds_left);
 	for(int i = 0; i < seconds_left; i++) {
 		pcap_sendpacket(signal_handler_pcap, (const unsigned char *)&restore_ps4_packet, sizeof(ARPPacket_t));
 		pcap_sendpacket(signal_handler_pcap, (const unsigned char *)&restore_gateway_packet, sizeof(ARPPacket_t));
@@ -177,6 +177,7 @@ int main(int argc, char **argv) {
 	printf("            Ready to toggle blacklist :)\n");
 	printf("\n =================================================\n\n");
 	if(system("stty -echo")) fprintf(stderr, "Can't put terminal into non-echo mode\n");
+	printf("            Press CTRL+C to exit\n");
 	while(1) {
 		printf("\r  [ %s ] - Press ENTER to toggle", (enable_blacklist) ? "\x1b[32;1mON\x1b[0m " : "\x1b[91mOFF\x1b[0m");
 		fflush(stdout);
