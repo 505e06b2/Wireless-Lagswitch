@@ -1,6 +1,7 @@
 OUT=mitm_gta_online
 
 CC?=gcc
+MAKE?=make
 DEBUG?=1
 CFLAGS?=-std=gnu99 -O2 -pipe -Wall -Inpcap/Include -Iinclude -DDEBUG=$(DEBUG)
 LDFLAGS?=-lpcap -lnetfilter_queue -lpthread
@@ -19,8 +20,8 @@ obj/%.o: source/%.c
 .PHONY: run clean release
 
 release:
-	make clean
-	make DEBUG=0
+	$(MAKE) clean
+	$(MAKE) DEBUG=0 $(MAKEFLAGS)
 
 run: $(OUT)
 	sudo ./$(OUT)
