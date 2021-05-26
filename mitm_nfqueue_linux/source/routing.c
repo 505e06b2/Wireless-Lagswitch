@@ -7,7 +7,7 @@
 #define DROP nfq_set_verdict(nfq, id, NF_DROP, 0, NULL)
 
 extern int enable_blacklist; //main.c
-extern BlacklistRange_t blacklisted_ips[]; //blacklist.c
+extern BlacklistRange_t *blacklisted_ip_ranges; //blacklist.c
 
 uint32_t target_ip = 0; //set when thread starts - host order
 int received_packet = 0; //can be externed to determine if at least one packet has been captured
@@ -56,8 +56,8 @@ static int routingCallback(struct nfq_q_handle *nfq, struct nfgenmsg *nfmsg, str
 	if(remote_ip == target_ip) remote_ip = ntohl(ip_header->saddr);
 
 	if(enable_blacklist) {
-		BlacklistRange_t *current_ip_range = blacklisted_ips;
-		for(; current_ip_range->start; current_ip_range += 1) { //start is 0.0.0.0 or NULL at the end
+		BlacklistRange_t *current_ip_range = blacklisted_ip_ranges;
+		for(; current_ip_range; current_ip_range = current_ip_range->next) {
 			//don't have byte-order converted at compile-time, for portability
 			if(remote_ip >= ntohl(current_ip_range->start) && remote_ip <= ntohl(current_ip_range->end)) {
 				return DROP;

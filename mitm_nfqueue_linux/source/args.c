@@ -75,7 +75,7 @@ void parseCommandlineParameters(int argc, char **argv) {
 				break;
 
 			case 'h':
-				printf("usage: give_me_a_clean [-h] [-g GATEWAY_IP] [-n NETMASK] [-i TARGET_IP] [-m TARGET_MAC] [-t ARP_TIMEOUT] [-a INTERFACE]");
+				printf("usage: give_me_a_clean [-h] [-g GATEWAY_IP] [-n NETMASK] [-i TARGET_IP] [-m TARGET_MAC] [-t ARP_TIMEOUT] [-a INTERFACE] [BLACKLIST_IP_RANGES...]");
 				printf("\n");
 				printf("optional arguments:\n");
 				printf("-h, --help         Show this help message\n");
@@ -91,4 +91,6 @@ void parseCommandlineParameters(int argc, char **argv) {
 				exit(2);
         }
     }
+
+    parseBlacklistIPRanges(argc - optind, (const char **)argv + optind);
 }

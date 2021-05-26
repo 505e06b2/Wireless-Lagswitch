@@ -11,9 +11,6 @@ SOURCES=main.c linux.c arp.c networking.c args.c routing.c blacklist.c
 $(OUT): $(SOURCES:%.c=obj/%.o)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-source/blacklist.c: generate_blacklisted_ips.py
-	./generate_blacklisted_ips.py
-
 obj/%.o: source/%.c
 	$(CC) -c -MD -MP $(CFLAGS) $< -o $@
 

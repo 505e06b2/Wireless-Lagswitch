@@ -20,11 +20,11 @@ make -j5 release
 ```
 
 #### Other (Virtual Machine)
-1. Download and install VirtualBox
+1. Download and [install VirtualBox](https://www.virtualbox.org)
 2. Download the [latest VM](https://github.com/505e06b2/Wireless-Lagswitch/releases)
 3. Open VirtualBox and click File > Import Appliance
 4. Select the `.ova` file and run through the setup - the defaults should be good
-5. As long as the network settings are correct, everything else is up to you
+5. As long as the network settings are correct (Promiscuous Mode: Allow All), everything else is up to you
 ![](https://raw.githubusercontent.com/505e06b2/Wireless-Lagswitch/master/mitm_nfqueue_linux/virtualbox_network.png)
 6. Run the VM and wait until you are automatically logged in as `x@leaveMeAlone`
 7. Type `./go.sh` and it should automatically update, compile, then run the program

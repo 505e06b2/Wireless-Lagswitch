@@ -16,6 +16,7 @@
 extern ip_address_t ARGUMENT_gateway_ip;
 extern ip_address_t ARGUMENT_netmask;
 extern int received_packet; //routing.c
+extern BlacklistRange_t *blacklisted_ip_ranges; //blacklist.c
 
 char errbuf[PCAP_ERRBUF_SIZE];
 ARPPacket_t poison_ps4_packet;
@@ -88,8 +89,21 @@ int main(int argc, char **argv) {
 	#endif
 
 	printf("            Session Cutter - MITM\n");
-	printf(" ========== github.com/505e06b2/Wireless-Lagswitch\n");
-	printf("\n");
+	printf("            github.com/505e06b2/Wireless-Lagswitch\n\n");
+
+	printf(" ========== Blacklist\n");
+	{
+		int index = 1;
+		BlacklistRange_t *current_ip_range = blacklisted_ip_ranges;
+		for(; current_ip_range; current_ip_range = current_ip_range->next) {
+			printf(" % 9d: ", index++);
+			printIP((uint8_t *)&current_ip_range->start);
+			printf(" -> ");
+			printIP((uint8_t *)&current_ip_range->end);
+			printf("\n");
+		}
+		printf("\n");
+	}
 
 	pcap_if_t *all_devices;
 	pcap_findalldevs(&all_devices, errbuf);
@@ -110,6 +124,7 @@ int main(int argc, char **argv) {
 		os_getGatewayIPv4FromDeviceName(src_machine.ip, this_machine_interface->name);
 	}
 
+	printf(" ========== Hardware\n");
 	printf("%10s: %-15s", "Interface", this_machine.name); printf("\n");
 	printf("%10s: ", "MAC"); printMac(this_machine.mac); printf("\n");
 	printf("%10s: ", "IPv4"); printIP(this_machine.ip); printf("\n");

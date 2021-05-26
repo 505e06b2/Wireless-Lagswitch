@@ -10,12 +10,9 @@
 #include <linux/netfilter.h>
 #include <libnetfilter_queue/libnetfilter_queue.h>
 
-#define IP_FORWARD_PATH "/proc/sys/net/ipv4/ip_forward"
+#include "blacklist.h"
 
-typedef struct BlacklistRange {
-	in_addr_t start; //inclusive
-	in_addr_t end; //inclusive
-} BlacklistRange_t;
+#define IP_FORWARD_PATH "/proc/sys/net/ipv4/ip_forward"
 
 void setIPForwardState(const char);
 void setIPTablesRules(const in_addr_t);

@@ -7,6 +7,7 @@
 #include <getopt.h>
 
 #include "networking.h"
+#include "blacklist.h"
 
 void parseCommandlineParameters(int, char **);
 
