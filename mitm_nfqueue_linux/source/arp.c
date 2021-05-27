@@ -115,26 +115,27 @@ void findPS4(Machine_t *gateway, Machine_t *ps4, const ThisMachine_t *this_machi
 	if(memcmp(ARGUMENT_target_mac, "\0\0\0\0\0\0", sizeof(mac_address_t)) != 0) using_commandline_mac = 1;
 
 	while(current_machine) {
-		//check hasn't been specified, continue || check has been specified and passes, continue
-		if(using_commandline_ip == 0 || memcmp(current_machine->ip, ARGUMENT_target_ip, sizeof(ip_address_t)) == 0) {
-			if(using_commandline_mac) {
-				if(memcmp(current_machine->mac, ARGUMENT_target_mac, sizeof(mac_address_t)) == 0) {
+		if(using_commandline_ip == 0 && using_commandline_mac == 0) { //Pure search
+			for(size_t i = 0; i < sizeof(known_ps4_mac_prefixes); i++) {
+				if(memcmp(current_machine->mac, known_ps4_mac_prefixes[i], sizeof(mac_address_prefix_t)) == 0) {
+					#if DEBUG
+						printf("DEBUG: Found PS4 mac: %02x:%02x:%02x:%02x:%02x:%02x\n", current_machine->mac[0], current_machine->mac[1], current_machine->mac[2], current_machine->mac[3], current_machine->mac[4], current_machine->mac[5]);
+					#endif
 					memcpy(ps4->ip, current_machine->ip, sizeof(ip_address_t));
 					memcpy(ps4->mac, current_machine->mac, sizeof(mac_address_t));
 					found_devices++;
+					break;
 				}
-			} else {
-				for(size_t i = 0; i < sizeof(known_ps4_mac_prefixes); i++) {
-					if(memcmp(current_machine->mac, known_ps4_mac_prefixes[i], sizeof(mac_address_prefix_t)) == 0) {
-						#if DEBUG
-							printf("DEBUG: Found PS4 mac: %02x:%02x:%02x:%02x:%02x:%02x\n", current_machine->mac[0], current_machine->mac[1], current_machine->mac[2], current_machine->mac[3], current_machine->mac[4], current_machine->mac[5]);
-						#endif
-						memcpy(ps4->ip, current_machine->ip, sizeof(ip_address_t));
-						memcpy(ps4->mac, current_machine->mac, sizeof(mac_address_t));
-						found_devices++;
-						break;
-					}
-				}
+			}
+		} else {
+			//if (not target_ip or target_ip == i[1].psrc) and (not mac_startswith or i[1].hwsrc.startswith(mac_startswith)):
+			if(
+				(using_commandline_ip == 0 || memcmp(current_machine->ip, ARGUMENT_target_ip, sizeof(ip_address_t)) == 0) &&
+				(using_commandline_mac == 0 || memcmp(current_machine->mac, ARGUMENT_target_mac, sizeof(mac_address_t)) == 0)
+			) {
+				memcpy(ps4->ip, current_machine->ip, sizeof(ip_address_t));
+				memcpy(ps4->mac, current_machine->mac, sizeof(mac_address_t));
+				found_devices++;
 			}
 		}
 
@@ -145,10 +146,13 @@ void findPS4(Machine_t *gateway, Machine_t *ps4, const ThisMachine_t *this_machi
 
 	if(found_devices > 1) {
 		fprintf(stderr, "Found %zu valid devices on the network; can't determine target\n", found_devices);
-		exit(1);
+		fprintf(stderr, "Trying using the --target_ip / --target_mac flags to pinpoint your target\n");
+		exit(2);
 	} else if(found_devices < 1) {
 		fprintf(stderr, "No valid devices found on the network\n");
-		exit(1);
+		if(using_commandline_ip) fprintf(stderr, "IP: %3u.%3u.%3u.%3u\n", ARGUMENT_target_ip[0], ARGUMENT_target_ip[1], ARGUMENT_target_ip[2], ARGUMENT_target_ip[3]);
+		if(using_commandline_mac) fprintf(stderr, "MAC: %02x:%02x:%02x:%02x:%02x:%02x\n", ARGUMENT_target_mac[0], ARGUMENT_target_mac[1], ARGUMENT_target_mac[2], ARGUMENT_target_mac[3], ARGUMENT_target_mac[4], ARGUMENT_target_mac[5]);
+		exit(2);
 	}
 }
 

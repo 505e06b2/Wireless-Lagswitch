@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
 	findPS4(&src_machine, &dst_machine, &this_machine, pcap);
 
 	printf("%10s: ", "Router"); printIP(src_machine.ip); printf(" / "); printMac(src_machine.mac); printf("\n");
-	printf("%10s: ", "PS4"); printIP(dst_machine.ip); printf(" / "); printMac(dst_machine.mac); printf("\n");
+	printf("%10s: ", "Target"); printIP(dst_machine.ip); printf(" / "); printMac(dst_machine.mac); printf("\n");
 
 	//fill restore PS4 packet with real values - from Gateway -> PS4
 	fillARPPacket(&restore_ps4_packet, &src_machine, &dst_machine, ARPOP_REPLY, this_machine.mac);
