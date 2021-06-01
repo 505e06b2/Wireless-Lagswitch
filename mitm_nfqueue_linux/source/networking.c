@@ -19,7 +19,9 @@ void setPcapFilter(pcap_t *pcap, const char *filter) {
 pcap_if_t *findInterfaceInformation(ThisMachine_t *this_machine, pcap_if_t *all_devices) {
 	pcap_if_t *ret = NULL;
 
-	printf("DEBUG: Finding interface\n");
+	#if DEBUG
+		printf("DEBUG: Finding interface\n");
+	#endif
 	for(pcap_if_t *ptr = all_devices; ptr->next; ptr = ptr->next) {
 		if(ptr->addresses == NULL) continue;
 		if(ARGUMENT_interface_name) {
