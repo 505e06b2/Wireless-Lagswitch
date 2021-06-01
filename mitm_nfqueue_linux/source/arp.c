@@ -20,6 +20,13 @@ static FoundMachines_t *findMachinesOnTheNetwork(Machine_t *gateway, const ThisM
 	FoundMachines_t *ret = NULL;
 	FoundMachines_t **current_found_machine = &ret;
 
+	//set up sniffing before sending to capture more
+	setPcapFilter(pcap, "arp [6:2] = 2");
+	if(pcap_setnonblock(pcap, 1, errbuf) == -1) { //or could be an infinite wait
+		fprintf(stderr, "Error setting non blocking mode: %s\n", errbuf);
+		return NULL;
+	}
+
 	//fill arp packet
 	memset(arp_request.eth.h_dest, 0xff, sizeof(mac_address_t));
 	memcpy(arp_request.eth.h_source, this_machine->mac, sizeof(mac_address_t));
@@ -49,13 +56,6 @@ static FoundMachines_t *findMachinesOnTheNetwork(Machine_t *gateway, const ThisM
 		}
 	}
 
-	//wait for responses
-	setPcapFilter(pcap, "arp [6:2] = 2");
-	if(pcap_setnonblock(pcap, 1, errbuf) == -1) { //or could be an infinite wait
-		fprintf(stderr, "Error setting non blocking mode: %s\n", errbuf);
-		return NULL;
-	}
-
 	int next_ret;
 	struct pcap_pkthdr *response_packet_header;
 	#if DEBUG
@@ -75,6 +75,11 @@ static FoundMachines_t *findMachinesOnTheNetwork(Machine_t *gateway, const ThisM
 					printf("DEBUG: Found gateway mac: %02x:%02x:%02x:%02x:%02x:%02x\n", gateway->mac[0], gateway->mac[1], gateway->mac[2], gateway->mac[3], gateway->mac[4], gateway->mac[5]);
 				#endif
 			} else { //don't do any checks, just add to foundmachines so as many requests can be handled in ARP_REPLY_WAIT_TIME - this also makes this function generic and reusable
+				#if DEBUG
+					printf("DEBUG: %3u.%3u.%3u.%3u / %02x:%02x:%02x:%02x:%02x:%02x\n",
+						arp_response->arp.src_ip[0], arp_response->arp.src_ip[1], arp_response->arp.src_ip[2], arp_response->arp.src_ip[3],
+						arp_response->arp.src_mac[0], arp_response->arp.src_mac[1], arp_response->arp.src_mac[2], arp_response->arp.src_mac[3], arp_response->arp.src_mac[4], arp_response->arp.src_mac[5]);
+				#endif
 				*current_found_machine = calloc(1, sizeof(FoundMachines_t)); //calloc for safety
 				memcpy((*current_found_machine)->ip, arp_response->arp.src_ip, sizeof(ip_address_t));
 				memcpy((*current_found_machine)->mac, arp_response->arp.src_mac, sizeof(mac_address_t));
@@ -114,6 +119,7 @@ void findPS4(Machine_t *gateway, Machine_t *ps4, const ThisMachine_t *this_machi
 	if(memcmp(ARGUMENT_target_ip, "\0\0\0\0", sizeof(ip_address_t)) != 0) using_commandline_ip = 1;
 	if(memcmp(ARGUMENT_target_mac, "\0\0\0\0\0\0", sizeof(mac_address_t)) != 0) using_commandline_mac = 1;
 
+	printf("DEBUG: Attempting to find target\n");
 	while(current_machine) {
 		if(using_commandline_ip == 0 && using_commandline_mac == 0) { //Pure search
 			for(size_t i = 0; i < sizeof(known_ps4_mac_prefixes); i++) {
@@ -133,6 +139,11 @@ void findPS4(Machine_t *gateway, Machine_t *ps4, const ThisMachine_t *this_machi
 				(using_commandline_ip == 0 || memcmp(current_machine->ip, ARGUMENT_target_ip, sizeof(ip_address_t)) == 0) &&
 				(using_commandline_mac == 0 || memcmp(current_machine->mac, ARGUMENT_target_mac, sizeof(mac_address_t)) == 0)
 			) {
+				#if DEBUG
+					printf("DEBUG: %3u.%3u.%3u.%3u / %02x:%02x:%02x:%02x:%02x:%02x\n",
+						current_machine->ip[0], current_machine->ip[1], current_machine->ip[2], current_machine->ip[3],
+						current_machine->mac[0], current_machine->mac[1], current_machine->mac[2], current_machine->mac[3], current_machine->mac[4], current_machine->mac[5]);
+				#endif
 				memcpy(ps4->ip, current_machine->ip, sizeof(ip_address_t));
 				memcpy(ps4->mac, current_machine->mac, sizeof(mac_address_t));
 				found_devices++;

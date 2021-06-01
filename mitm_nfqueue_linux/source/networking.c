@@ -19,6 +19,7 @@ void setPcapFilter(pcap_t *pcap, const char *filter) {
 pcap_if_t *findInterfaceInformation(ThisMachine_t *this_machine, pcap_if_t *all_devices) {
 	pcap_if_t *ret = NULL;
 
+	printf("DEBUG: Finding interface\n");
 	for(pcap_if_t *ptr = all_devices; ptr->next; ptr = ptr->next) {
 		if(ptr->addresses == NULL) continue;
 		if(ARGUMENT_interface_name) {
@@ -26,6 +27,7 @@ pcap_if_t *findInterfaceInformation(ThisMachine_t *this_machine, pcap_if_t *all_
 				(ptr->description && strcmp(ptr->description, ARGUMENT_interface_name) != 0)) continue; //Windows non-GUID
 		}
 
+		printf("DEBUG: %s\n", ptr->name);
 		for(pcap_addr_t *addr_ptr = ptr->addresses; addr_ptr; addr_ptr = addr_ptr->next) {
 			switch(addr_ptr->addr->sa_family) { // /usr/include/bits/socket.h
 				case AF_PACKET: {//(17) MAC for Linux + WINE - NETBIOS for Windows (which probably won't trigger)
