@@ -119,7 +119,9 @@ void findPS4(Machine_t *gateway, Machine_t *ps4, const ThisMachine_t *this_machi
 	if(memcmp(ARGUMENT_target_ip, "\0\0\0\0", sizeof(ip_address_t)) != 0) using_commandline_ip = 1;
 	if(memcmp(ARGUMENT_target_mac, "\0\0\0\0\0\0", sizeof(mac_address_t)) != 0) using_commandline_mac = 1;
 
-	printf("DEBUG: Attempting to find target\n");
+	#if DEBUG
+		printf("DEBUG: Attempting to find target\n");
+	#endif
 	while(current_machine) {
 		if(using_commandline_ip == 0 && using_commandline_mac == 0) { //Pure search
 			for(size_t i = 0; i < sizeof(known_ps4_mac_prefixes); i++) {
