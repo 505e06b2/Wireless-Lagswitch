@@ -1,4 +1,5 @@
 #warning This project is to show that with just pcap, it is possible to mitm - it is very far from optimal, however
+#warning If you try this on Windows, you will likely DoS your network card
 #warning Your network speed will likely not be good enough to host
 
 #include <pcap.h>
