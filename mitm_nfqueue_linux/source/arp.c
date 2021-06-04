@@ -27,7 +27,7 @@ static FoundMachines_t *findMachinesOnTheNetwork(Machine_t *gateway, const ThisM
 		return NULL;
 	}
 
-	//fill arp packet
+	//fill arp packet - do it manually since it gives more control
 	memset(arp_request.eth.h_dest, 0xff, sizeof(mac_address_t));
 	memcpy(arp_request.eth.h_source, this_machine->mac, sizeof(mac_address_t));
 	arp_request.eth.h_proto = htons(0x0806); //arp

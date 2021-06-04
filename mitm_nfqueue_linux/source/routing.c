@@ -58,7 +58,6 @@ static int routingCallback(struct nfq_q_handle *nfq, struct nfgenmsg *nfmsg, str
 	if(enable_blacklist) {
 		BlacklistRange_t *current_ip_range = blacklisted_ip_ranges;
 		for(; current_ip_range; current_ip_range = current_ip_range->next) {
-			//don't have byte-order converted at compile-time, for portability
 			if(remote_ip >= ntohl(current_ip_range->start) && remote_ip <= ntohl(current_ip_range->end)) {
 				return DROP;
 			}

@@ -180,14 +180,8 @@ int main(int argc, char **argv) {
 	//set up signal handler
 	signal_handler_pcap = pcap;
 	signal(SIGINT, restoreNetwork); //CTRL+C
-	#if __MINGW32__
-		//Windows
-		signal(SIGBREAK, restoreNetwork); //Generic Termination
-	#else
-		//Linux
-		signal(SIGTERM, restoreNetwork); //Generic Termination
-		signal(SIGHUP, restoreNetwork); //Disconnect from SSH etc
-	#endif
+	signal(SIGTERM, restoreNetwork); //Generic Termination
+	signal(SIGHUP, restoreNetwork); //Disconnect from SSH etc
 
 	printf("            Waiting for first packet...\n");
 	while(received_packet == 0) usleep(100000); //100ms
