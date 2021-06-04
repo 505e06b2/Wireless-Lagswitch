@@ -1,3 +1,7 @@
+#ifdef _WIN32
+	#error The NT kernel does not support the necessary operations
+#endif
+
 #include <pcap.h>
 #include <stdlib.h>
 #include <stdio.h>

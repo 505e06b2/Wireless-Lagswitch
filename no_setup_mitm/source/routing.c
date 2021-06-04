@@ -1,18 +1,7 @@
 #include "routing.h"
 
-#define LONGEST_FILTER "ip host 255.255.255.255"
-#define FILTER_TEMPLATE "ip host %hhu.%hhu.%hhu.%hhu"
-
-static void printMac(const mac_address_t mac_array) {
-	printf("%02x", mac_array[0]);
-	for(int i = 1; i < 6; i++) printf(":%02x", mac_array[i]);
-}
-
-static void helper_checkPacket(const uint8_t *packet) {
-	printf("===== PACKET =====\n");
-	printf("Target MAC: "); printMac(((EthHeader_t *)packet)->dst); printf("\n");
-	printf("Source MAC: "); printMac(((EthHeader_t *)packet)->src); printf("\n");
-}
+#define LONGEST_FILTER "host 255.255.255.255"
+#define FILTER_TEMPLATE "host %hhu.%hhu.%hhu.%hhu"
 
 typedef struct RoutingThreadArgs {
 	pcap_t *pcap;
@@ -22,7 +11,6 @@ typedef struct RoutingThreadArgs {
 	ThisMachine_t *this;
 } RoutingThreadArgs_t;
 
-//UNFINISHED, WITH NO INTENTION TO BE COMPLETED
 static void *routingThreadFunction(void *args) {
 	pcap_t *pcap = ((RoutingThreadArgs_t *)args)->pcap;
 	int *toggled_on = ((RoutingThreadArgs_t *)args)->toggled_on;
@@ -48,6 +36,10 @@ static void *routingThreadFunction(void *args) {
 			if(next_ret == PCAP_ERROR) fprintf(stderr, "Error reading packet\n");
 			continue;
 		}
+		if(*toggled_on) {
+			//drop packet
+			continue;
+		}
 		if(received_packet == NULL) continue; //safeguard - probably not needed
 		if(((EthHeader_t *)received_packet)->ethertype != htons(0x0800)) continue; //probably don't need to check since the filter's in place?
 
@@ -58,7 +50,6 @@ static void *routingThreadFunction(void *args) {
 			memcpy(((EthHeader_t *)sending_packet)->dst, src->mac, sizeof(mac_address_t));
 		}
 		memcpy(((EthHeader_t *)sending_packet)->src, this->mac, sizeof(mac_address_t));
-		//helper_checkPacket(sending_packet);
 		pcap_sendpacket(pcap, sending_packet, response_packet_header->caplen);
 	}
 	return NULL;

@@ -1,3 +1,6 @@
+#warning This project is to show that with just pcap, it is possible to mitm - it is very far from optimal, however
+#warning Your network speed will likely not be good enough to host
+
 #include <pcap.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,7 +39,7 @@ pcap_t *signal_handler_pcap = NULL;
 static pcap_t *openPcap(const char *interface_name) {
 	pcap_t *pcap = pcap_open_live(interface_name,
 		MTU, //buffer length
-		PCAP_OPENFLAG_PROMISCUOUS | PCAP_OPENFLAG_MAX_RESPONSIVENESS | PCAP_OPENFLAG_NOCAPTURE_LOCAL | PCAP_OPENFLAG_NOCAPTURE_RPCAP, //flags
+		1, //flags
 		100, //timeout (ms)
 		errbuf //error buffer
 	);
@@ -76,7 +79,7 @@ static void *arpThreadFunction(void *arg) {
 static void restoreNetwork(int x) {
 	if(running == 0) return; //already exiting
 	running = 0;
-	const int seconds_left = 10;
+	const int seconds_left = 3; //Windows will SIGKILL otherwise
 	printf("\nRestoring network for %ds...\n", seconds_left);
 	for(int i = 0; i < seconds_left; i++) {
 		pcap_sendpacket(signal_handler_pcap, (const unsigned char *)&restore_ps4_packet, sizeof(ARPPacket_t));
@@ -96,6 +99,7 @@ int main(int argc, char **argv) {
 	printf("            Session Cutter - MITM\n");
 	#if DEBUG
 		printf("WARNING: Performance is dreadful, since a kernel network filter is non-portable\n");
+		printf("WARNING: No blacklist being used, toggling on will have the same effect as pulling the ethernet out\n");
 	#endif
 	printf(" ========== github.com/505e06b2/Wireless-Lagswitch\n");
 	printf("\n");

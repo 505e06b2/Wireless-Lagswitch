@@ -1,3 +1,5 @@
+#Notes: After testing, it seems like using NFQueue in Python, rather than C, leads to a performance loss of least 75%
+
 import platform
 
 import scapy.all as net

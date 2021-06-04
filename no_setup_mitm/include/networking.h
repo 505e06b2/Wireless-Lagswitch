@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MTU 1500
+#define MTU 4096 //buffer for pcap + packets
 
 #if __MINGW32__
 	struct sockaddr_ll { //doesn't exist on Windows
