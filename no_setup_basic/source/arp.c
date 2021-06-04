@@ -17,6 +17,9 @@ static FoundMachines_t *findMachinesOnTheNetwork(Machine_t *gateway, const ThisM
 	FoundMachines_t *ret = NULL;
 	FoundMachines_t **current_found_machine = &ret;
 
+	//set this here, so capturing is given the full amount of time
+	setPcapFilter(pcap, "arp [6:2] = 2");
+
 	//fill arp packet
 	memset(arp_request.eth.dst, 0xff, sizeof(mac_address_t));
 	memcpy(arp_request.eth.src, this_machine->mac, sizeof(mac_address_t));
@@ -45,8 +48,6 @@ static FoundMachines_t *findMachinesOnTheNetwork(Machine_t *gateway, const ThisM
 			#endif
 		}
 	}
-
-	setPcapFilter(pcap, "arp [6:2] = 2");
 
 	//wait for responses
 	int next_ret;

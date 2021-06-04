@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <signal.h>
-
+#include <unistd.h> //sleep
 #include <pthread.h>
 
 #include "arp.h"
@@ -15,13 +15,6 @@
 #include "routing.h"
 #include "os_specific.h"
 #include "args.h"
-
-#if __MINGW32__
-	#include <windows.h> //sleep
-	#define sleep(x) (Sleep(x*1000));
-#else
-	#include <unistd.h> //sleep
-#endif
 
 extern ip_address_t ARGUMENT_gateway_ip;
 extern ip_address_t ARGUMENT_netmask;

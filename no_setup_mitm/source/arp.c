@@ -20,6 +20,13 @@ static FoundMachines_t *findMachinesOnTheNetwork(Machine_t *gateway, const ThisM
 	FoundMachines_t *ret = NULL;
 	FoundMachines_t **current_found_machine = &ret;
 
+	//set this here, so capturing is given the full amount of time
+	setPcapFilter(pcap, "arp [6:2] = 2");
+	if(pcap_setnonblock(pcap, 1, errbuf) == -1) { //or could be an infinite wait
+		fprintf(stderr, "Error setting non blocking mode: %s\n", errbuf);
+		return NULL;
+	}
+
 	//fill arp packet
 	memset(arp_request.eth.dst, 0xff, sizeof(mac_address_t));
 	memcpy(arp_request.eth.src, this_machine->mac, sizeof(mac_address_t));
@@ -47,13 +54,6 @@ static FoundMachines_t *findMachinesOnTheNetwork(Machine_t *gateway, const ThisM
 				fprintf(stderr, "pcap_sendpacket error: %s\n", pcap_geterr(pcap));
 			#endif
 		}
-	}
-
-	//wait for responses
-	setPcapFilter(pcap, "arp [6:2] = 2");
-	if(pcap_setnonblock(pcap, 1, errbuf) == -1) { //or could be an infinite wait
-		fprintf(stderr, "Error setting non blocking mode: %s\n", errbuf);
-		return NULL;
 	}
 
 	int next_ret;
