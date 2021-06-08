@@ -5,8 +5,8 @@
 BlacklistRange_t *blacklisted_ip_ranges = NULL;
 
 static const char *default_blacklist[] = { //GTA: Online
-	"185.56.65.0/24", "192.81.240.0/21", //take-two
-	"20.33.0.0/16", "20.40.0.0/13", "20.128.0.0/16", "20.36.0.0/14", "20.48.0.0/12", "20.34.0.0/15", "20.64.0.0/10" //Microsoft
+	"185.56.65.0/24", "192.81.240.0/21", //take-two - Must be matchmaking servers
+	//"20.33.0.0/16", "20.40.0.0/13", "20.128.0.0/16", "20.36.0.0/14", "20.48.0.0/12", "20.34.0.0/15", "20.64.0.0/10" //Microsoft
 };
 
 static void formatError(const char *given) {
