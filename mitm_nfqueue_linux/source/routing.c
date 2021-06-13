@@ -59,6 +59,11 @@ static int routingCallback(struct nfq_q_handle *nfq, struct nfgenmsg *nfmsg, str
 		BlacklistRange_t *current_ip_range = blacklisted_ip_ranges;
 		for(; current_ip_range; current_ip_range = current_ip_range->next) {
 			if(remote_ip >= ntohl(current_ip_range->start) && remote_ip <= ntohl(current_ip_range->end)) {
+				#if DEBUG
+					const in_addr_t ip = htonl(remote_ip);
+					const uint8_t *ptr = (uint8_t *)&ip;
+					fprintf(stderr, "DROP %3u.%3u.%3u.%3u\n", ptr[0], ptr[1], ptr[2], ptr[3]);
+				#endif
 				return DROP;
 			}
 		}
