@@ -16,8 +16,9 @@ make -j5 release
 #### Windows
 1. [Download and start the npcap installer](https://nmap.org/npcap/)
 2. Choose these settings for npcap:
- ![](https://raw.githubusercontent.com/505e06b2/Wireless-Lagswitch/master/no_setup_basic/npcap_1_00_setup.png)
- 3. Download the [Session Cutter](https://github.com/505e06b2/Wireless-Lagswitch/releases)
+
+![](https://raw.githubusercontent.com/505e06b2/Wireless-Lagswitch/master/no_setup_basic/npcap_1_00_setup.png)
+3. Download the [Session Cutter](https://github.com/505e06b2/Wireless-Lagswitch/releases)
 
 ### Mac
 lol
