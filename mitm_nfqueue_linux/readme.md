@@ -22,6 +22,7 @@ make -j5 release
 5. As long as the network settings are correct (Promiscuous Mode: Allow All), everything else is up to you
 
 ![](https://raw.githubusercontent.com/505e06b2/Wireless-Lagswitch/master/mitm_nfqueue_linux/virtualbox_network.png)
+
 6. Run the VM and wait until you are automatically logged in as `x@leaveMeAlone`
 7. Type `./go.sh` and it should automatically update, compile, then run the program
 8. If that doesn't work, this should be a "standard" Ubuntu installation, so all coreutils should be available - try `ls` and `cd`
