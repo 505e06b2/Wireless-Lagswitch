@@ -1,0 +1,3 @@
+[submodule "virgin_media_superhub/Superhub3_CLI"]
+	path = virgin_media_superhub/Superhub3_CLI
+	url = https://github.com/505e06b2/Superhub3_CLI
