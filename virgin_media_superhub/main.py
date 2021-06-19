@@ -80,9 +80,9 @@ if __name__ == "__main__":
 			sys.exit(1)
 
 		print("Finding PS4...")
-		if ip_address:
-			print(f"Using IP address for search: {ip_address}")
-		playstation_ip = findPlaystationIP(hub.getConnectedDeviceInfo(ip_address), target_mac_prefixes)
+		if settings["ip_address"]:
+			print(f"Using IP address for search: {settings['ip_address']}")
+		playstation_ip = findPlaystationIP(hub.getConnectedDeviceInfo(settings["ip_address"]), target_mac_prefixes)
 		print("Playstation IP:", playstation_ip)
 
 		filter_count = hub.countPortFilters()
