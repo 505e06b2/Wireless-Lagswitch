@@ -85,7 +85,7 @@ if __name__ == "__main__":
 			print("       Playstation IP:", playstation_ip)
 
 		filter_count = hub.countPortFilters()
-		print(f"       {filter_count} IPv4 port filters found on the hub")
+		print(f"       {filter_count} IPv4 port filter(s) found on the hub")
 
 		filter_index = hub.getIndexOfPortFilter(playstation_ip)
 		if filter_index < 0:
