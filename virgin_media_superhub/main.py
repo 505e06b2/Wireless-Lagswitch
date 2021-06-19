@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 
+import os, sys, urllib.request, json
 import Superhub3_CLI as superhub
-import os, sys, requests, json
-
-nmap_mac_prefixes_url = "https://svn.nmap.org/nmap/nmap-mac-prefixes"
-nmap_mac_prefixes_cache = "mac_prefixes.txt"
 
 def makeOrdinal(n): #https://stackoverflow.com/a/50992575
     n = int(n)
@@ -13,18 +10,16 @@ def makeOrdinal(n): #https://stackoverflow.com/a/50992575
         suffix = 'th'
     return str(n) + suffix
 
-def getPlaystationMACs():
-	file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), nmap_mac_prefixes_cache)
+def getPlaystationMACs(prefix_url, prefix_filename):
+	file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), prefix_filename)
 	if not os.path.isfile(file_path):
 		print("Downloading MAC Vendor Prefixes for future use (700kB)...")
-		with requests.get(nmap_mac_prefixes_url) as r:
-			with open(nmap_mac_prefixes_cache, "w") as f:
-				f.write(r.text)
+		urllib.request.urlretrieve(prefix_url, prefix_filename)
 	else:
-		print(f"Using MAC Vendor Prefixes from disk (delete {nmap_mac_prefixes_cache} to update)")
+		print(f"Using MAC Vendor Prefixes from disk (delete {prefix_filename} to update)")
 
 	ret = []
-	with open(nmap_mac_prefixes_cache) as f:
+	with open(prefix_filename) as f:
 		for line in f.readlines():
 			mac_hex, name = line.strip().split(" ", 1)
 			name = name.strip().lower()
@@ -62,7 +57,9 @@ if __name__ == "__main__":
 		pass
 
 	settings["admin_password"] = settings.get("admin_password", "")
-	settings["ip_address"] = settings.get("ip_address", "")
+	settings["target_ip_address"] = settings.get("target_ip_address", "")
+	settings["nmap_mac_prefixes_url"] = settings.get("nmap_mac_prefixes_url", "https://svn.nmap.org/nmap/nmap-mac-prefixes")
+	settings["nmap_mac_prefixes_cache_file"] = settings.get("nmap_mac_prefixes_cache_file",  "mac_prefixes.txt")
 
 	print(f"Writing current settings to file ({settings_filename})")
 	with open(settings_path, "w") as f:
@@ -72,23 +69,25 @@ if __name__ == "__main__":
 		print(f"Set admin_password in {settings_filename} to access your Superhub")
 		exit(1)
 
-	target_mac_prefixes = getPlaystationMACs()
+	target_mac_prefixes = getPlaystationMACs(settings["nmap_mac_prefixes_url"], settings["nmap_mac_prefixes_cache_file"])
 
 	with superhub.Superhub(settings["admin_password"]) as hub:
 		if not hub:
 			print("Failed to log in, password incorrect?")
 			sys.exit(1)
 
-		print("Finding PS4...")
-		if settings["ip_address"]:
-			print(f"Using IP address for search: {settings['ip_address']}")
-		playstation_ip = findPlaystationIP(hub.getConnectedDeviceInfo(settings["ip_address"]), target_mac_prefixes)
-		print("Playstation IP:", playstation_ip)
+		if settings["target_ip_address"]:
+			print(f"Using IP address for search: {settings['target_ip_address']}")
+			playstation_ip = settings["target_ip_address"]
+		else:
+			print("Finding PS4...")
+			playstation_ip = findPlaystationIP(hub.getConnectedDeviceInfo(settings["target_ip_address"]), target_mac_prefixes)
+			print("Playstation IP:", playstation_ip)
 
 		filter_count = hub.countPortFilters()
 		print(f"{filter_count} IPv4 port filters found on the hub")
 
-		filter_index = -1#hub.getIndexOfPortFilter(playstation_ip)
+		filter_index = hub.getIndexOfPortFilter(playstation_ip)
 		if filter_index < 0:
 			print(f"No filter found for {playstation_ip}")
 			yes_no = input(f"Create a filter for {playstation_ip}? (you MUST make your Playstation's IP static) [Y/N] ")
